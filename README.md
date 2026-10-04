@@ -14,7 +14,7 @@ Live page: https://arjunadelaide.github.io/station-demo-day-kit/
 2. The planner sets the trip: the flight out with a "land by" time, the flight back with a "depart after" time, the cars, the rooms and the freight date. Each line has a search link with the dates and the travellers filled in.
 3. For a town that is not in the fact file, the planner finds the nearest airport with scheduled flights, the drive from the airport and the road distance from Sydney.
 4. The planner lists the deadlines and puts them in one calendar file.
-5. "Copy itinerary" gives the day-by-day plan for the crew. "Copy freight request" gives a quote request for a carrier.
+5. "Copy itinerary" gives the day-by-day plan for the crew. "Copy freight request" gives the freight details for a carrier or a freight contact.
 6. "Run the agent in Claude" opens Claude with the brief for this request. "Copy agent brief" and "Copy Slack request" give the hand-off and the approval message.
 7. The run sheet, the kit list, the pilot questions and the guest messages are in the lower sections.
 

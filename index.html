@@ -443,7 +443,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
         <li>Flights: a booking service with an interface for software. Duffel lists search and booking for <a href="https://duffel.com/flights/airlines/qantas" target="_blank" rel="noopener">Qantas</a>, <a href="https://duffel.com/flights/airlines/jetstar" target="_blank" rel="noopener">Jetstar</a> and <a href="https://duffel.com/flights/airlines/virgin-australia" target="_blank" rel="noopener">Virgin Australia</a>. For Virgin Australia it lists paid bags, changes and refunds as coming soon. The agent makes the order and pays from the balance of the company account. <a class="src" href="https://duffel.com/docs/api/v2/payments" target="_blank" rel="noopener" title="Duffel API">Source</a> The agent does not hold a card number. I have not tested Duffel on these routes.</li>
         <li>Rooms: Duffel also has an accommodation service. Access is on request. <a class="src" href="https://duffel.com/docs/guides/getting-started-with-stays" target="_blank" rel="noopener" title="Duffel">Source</a></li>
         <li>Car: I have not checked a booking service for the car. For now the agent opens the booking page with the trip filled in, and a person pays. A second option is a virtual card for one payment with an amount limit. <a class="src" href="https://www.airwallex.com/docs/api/issuing/cards/create" target="_blank" rel="noopener" title="Airwallex API">Source</a></li>
-        <li>Freight: the agent sends the quote request by email. A person approves the quote.</li>
+        <li>Freight: I do not know how Brumby moves the kit. The agent sets the dates and writes the freight details. The details go to the carrier account or the freight contact that Brumby uses.</li>
       </ul>
       <p style="margin-top:12px">Three controls apply to each booking: a spend limit, a price check at the time of booking, and a log. If the price is above the approved price, the agent stops and asks again.</p>
     </div>
@@ -457,7 +457,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
           <tr><td class="t" style="width:auto">Request</td><td>A form email</td><td>Fills the record. Drafts one question.</td><td class="roc">Accepts</td></tr>
           <tr><td class="t" style="width:auto">Date</td><td>The grazier's reply</td><td>Offers two dates. Holds the calendar.</td><td class="roc">Nothing</td></tr>
           <tr><td class="t" style="width:auto">Travel</td><td>An accepted demo</td><td>Picks the flights, the car and the rooms by policy.</td><td class="roc">One press each</td></tr>
-          <tr><td class="t" style="width:auto">Freight</td><td>An accepted demo</td><td>Sends the quote request with the dates.</td><td class="roc">Approves the quote</td></tr>
+          <tr><td class="t" style="width:auto">Freight</td><td>An accepted demo</td><td>Sets the dates. Sends the freight details to the carrier or the freight contact.</td><td class="roc">Approves</td></tr>
           <tr><td class="t" style="width:auto">Guests</td><td>Replies to the invite</td><td>Updates the head count, the catering and the kit list.</td><td class="roc">Nothing</td></tr>
           <tr><td class="t" style="width:auto">Go or no-go</td><td>15:00 the day before</td><td>Posts the forecast against the limits. Drafts both guest messages.</td><td class="roc">Makes the call</td></tr>
           <tr><td class="t" style="width:auto">After</td><td>The end of the demo</td><td>Drafts the follow-ups. Files the photos and the receipts.</td><td class="roc">Sends</td></tr>
@@ -481,7 +481,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       <h3>Cut</h3>
       <p>Live prices on the page, payment, and United States ranch demos. The role has domestic travel, so I kept to three Australian regions.</p>
       <h3>Guessed</h3>
-      <p>The planner rules, the demo format and the freight lead time. I have not been to a Brumby demo day. For this reason the schedule is a template that you can edit.</p>
+      <p>The planner rules, the demo format, the freight lead time and the freight method. I have not been to a Brumby demo day. For this reason the schedule is a template that you can edit.</p>
       <h3>Next</h3>
       <p>Connect a flight search service so the shortlist shows on this page for each request. That needs an account with a flight data provider and a small server. Then send the shortlist to Slack for approval.</p>
       <h3>Built</h3>
@@ -1321,20 +1321,20 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     return L.join("\n");
   }
 
-  // A quote request for a road freight carrier.
+  // The freight details for the carrier or the freight contact.
   function freightRequest(s0) {
     var s = s0 || state, r = s.req.region, t = s.trip;
     return [
-      "Subject: Quote request: Sydney to " + r.town + (r.state ? " " + r.state : "") + ", deliver by " + shortDate(t.freightDue),
+      "Subject: Freight: Sydney to " + r.town + (r.state ? " " + r.state : "") + ", deliver by " + shortDate(t.freightDue),
       "",
       "Hi,",
       "",
-      "Please quote for road freight.",
+      "Here are the freight details for a demo.",
       "",
       "Pickup: Alexandria NSW, on or before " + shortDate(t.freightBy) + ".",
       "Delivery: [property address] near " + r.town + (r.state ? " " + r.state : "") + ", by " + shortDate(t.freightDue) + ". The road distance is about " + t.roadKm.toLocaleString("en-AU") + " km.",
       "Items: 1 dock, 1 aircraft, [number] lithium batteries. Weights and sizes: [from engineering].",
-      "The load has lithium batteries. Please tell us your dangerous goods requirements.",
+      "The load has lithium batteries. Please confirm the dangerous goods requirements.",
       "Contact on site: [host name and phone].",
       "",
       "Thanks,",
@@ -1511,7 +1511,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       "Found the airport: " + r.airport.code + ", " + hero.req.drive + " minutes from " + r.town + " by road.",
       "Set the limits: land by " + hm(t.landBy) + ", depart after " + hm(t.backAfter) + ".",
       "Compared " + (a.flights.out.length + a.flights.back.length) + " same-day flights, " + a.cars.options.length + " cars and " + a.rooms.options.length + " rooms. Chose one of each by the travel policy.",
-      "Wrote the freight quote request. Send by " + shortDate(t.freightBy) + ".",
+      "Set the freight dates and wrote the freight details. Send by " + shortDate(t.freightBy) + ".",
       "Put " + (hero.deadlines.length + 2) + " holds in the calendar.",
       "Wrote the itinerary, the guest invite, the reminder, the follow-up and the run sheet."
     ];
@@ -1589,8 +1589,8 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
         esc(plural(t.nights, "night") + " from " + shortDate(t.outDay) + ". Free cancellation, score " + g.room.score.toFixed(1) + ". The lowest price of the options compared.") + src(a.rooms.source + ", recorded " + a.recorded, a.rooms.url),
         money(rooms), money(g.room.price) + " a room", go("Book rooms", roomUrl)) +
       row("Freight", "Road freight, Sydney to " + r.town,
-        esc(t.roadKm.toLocaleString("en-AU") + " km. Send by " + shortDate(t.freightBy) + ". The quote request is written. Add the carrier address and send."),
-        "Quote", "", go("Open request in Gmail", gmail(freightRequest(hero))));
+        esc(t.roadKm.toLocaleString("en-AU") + " km. Send by " + shortDate(t.freightBy) + ". The freight details are written for your carrier or your freight contact."),
+        "Not priced", "", go("Open details in Gmail", gmail(freightRequest(hero))));
     $("total").textContent = money(flights + g.car.price + rooms);
     $("total-note").textContent = "for " + plural(n, "person") + ", before freight";
     $("done").innerHTML =
