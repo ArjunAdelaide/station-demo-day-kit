@@ -124,7 +124,7 @@ def report(record):
         "Proposed dates: %s or %s (calendar not checked yet)" % tuple(record["proposedDates"]),
         "Missing: %s" % ", ".join(record["missing"]),
         "Trip plan: %s" % record["planLink"],
-        "Waiting for a person: accept or decline.",
+        "Waiting for a person: one approval for the bookings.",
     ])
 
 
