@@ -77,7 +77,7 @@ Then open http://localhost:8651.
 
 - Weather and town search: Open-Meteo (open-meteo.com).
 - Sunrise and sunset: calculated from the date and the location.
-- Flight search links: Google Flights. Car links: Kayak. Room links: Booking.com.
+- Flight links: the Virgin Australia booking page for a Virgin flight, and Kayak for the other flights. Each link has the route, the date and the travellers in it. Car links: Kayak. Room links: Booking.com.
 - Airports: OurAirports open data. Drive and freight distances: the OpenStreetMap road router (OSRM).
 - Region and operating facts: see the source links in `regions.js`. Checked 4 October 2026.
 

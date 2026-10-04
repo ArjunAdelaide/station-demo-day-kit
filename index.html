@@ -922,12 +922,23 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     };
   }
 
+  // A link that opens a flight search with the route, the date and the travellers filled in.
+  // Virgin Australia has its own booking link. The other links go to Kayak, which sends the buyer to the airline.
+  function flightLink(airline, from, to, day, n, nonStop) {
+    if (!/^[A-Z]{3}$/.test(from) || !/^[A-Z]{3}$/.test(to)) {
+      return "https://www.google.com/travel/flights?hl=en-AU&gl=au&curr=AUD&q=" + encodeURIComponent("one way flights from " + from + " to " + to + " on " + day + " for " + plural(n, "adult"));
+    }
+    if (airline === "Virgin Australia") {
+      var p = day.split("-"), d = p[1] + "-" + p[2] + "-" + p[0];
+      return "https://book.virginaustralia.com/dx/VADX/#/flight-selection?journeyType=one-way&activeMonth=" + d + "&awardBooking=false&class=Economy&ADT=" + n + "&CHD=0&INF=0&origin=" + from + "&destination=" + to + "&date=" + d + "&promoCode=&direction=0";
+    }
+    return "https://www.kayak.com.au/flights/" + from + "-" + to + "/" + day + "/" + n + "adults" + (nonStop ? "?fs=stops=0" : "");
+  }
+
   function links(s) {
     var r = s.req.region, t = s.trip, crew = s.req.crew;
     var dest = r.airport ? r.airport.code : r.label;
-    function gf(from, to, day) {
-      return "https://www.google.com/travel/flights?hl=en-AU&gl=au&curr=AUD&q=" + encodeURIComponent("one way flights from " + from + " to " + to + " on " + day + " for " + plural(crew, "adult"));
-    }
+    function gf(from, to, day) { return flightLink("", from, to, day, crew); }
     var pickHour = t.direct ? Math.min(23, Math.max(6, Math.floor(t.landBy / 60))) : 14;
     var dropHour = t.sameDay ? Math.min(23, Math.floor(t.backAfter / 60)) : 9;
     var place = r.town + (r.state ? ", " + r.state : "") + ", Australia";
@@ -1500,7 +1511,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       this.disabled = true;
       this.textContent = "Approved";
       document.querySelectorAll("#approvals .st").forEach(function (el) { el.textContent = "Approved"; });
-      $("approve-note").textContent = "In the live tool the agent now books each item with a company card that has a limit, and posts the confirmations in Slack. This prototype has no card. Each line has a link to its booking page.";
+      $("approve-note").textContent = "In the live tool the agent now books each item with a company card that has a limit, and posts the confirmations in Slack. This prototype has no card. Each link opens a booking page with the route, the dates and the travellers filled in.";
     });
     $("done").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-do]");
@@ -1526,23 +1537,26 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   function renderApprovals(g) {
     var a = g.a, t = hero.trip, r = hero.req.region, n = a.travellers;
     var flights = g.pickOut.o.price + g.pickBack.o.price, rooms = g.room.price * t.rooms * t.nights;
-    var roomUrl = g.room.url + "?checkin=" + t.outDay + "&checkout=" + t.backDay + "&group_adults=1&no_rooms=1";
-    function row(k, v, d, price, small, label, href) {
-      return '<div class="ap"><div class="k">' + k + '</div><div class="main"><div class="v">' + esc(v) + '</div><div class="d">' + d + '</div></div><div class="p">' + price + (small ? "<small>" + esc(small) + "</small>" : "") + '</div><div class="no-print" style="text-align:right"><span class="st"></span><a class="go" href="' + esc(href) + '" target="_blank" rel="noopener">' + label + " &#8599;</a></div></div>";
+    var roomUrl = g.room.url + "?checkin=" + t.outDay + "&checkout=" + t.backDay + "&group_adults=" + t.rooms + "&no_rooms=" + t.rooms;
+    function go(label, href) { return '<a class="go" href="' + esc(href) + '" target="_blank" rel="noopener">' + label + " &#8599;</a>"; }
+    function row(k, v, d, price, small, linksHtml) {
+      return '<div class="ap"><div class="k">' + k + '</div><div class="main"><div class="v">' + esc(v) + '</div><div class="d">' + d + '</div></div><div class="p">' + price + (small ? "<small>" + esc(small) + "</small>" : "") + '</div><div class="no-print" style="text-align:right;line-height:1.9"><span class="st"></span>' + linksHtml + "</div></div>";
     }
+    var code = r.airport.code;
+    var outUrl = flightLink(g.pickOut.o.airline, "SYD", code, t.outDay, n, g.pickOut.o.stops === "non-stop"), backUrl = flightLink(g.pickBack.o.airline, code, "SYD", t.backDay, n, g.pickBack.o.stops === "non-stop");
     $("approvals").innerHTML =
       row("Flights", g.pickOut.o.airline + " " + g.pickOut.o.stops + " out, " + g.pickBack.o.airline + " " + g.pickBack.o.stops + " back",
         esc(shortDate(t.outDay) + " " + g.pickOut.o.dep + " to " + g.pickOut.o.arr + ". " + shortDate(t.backDay) + " " + g.pickBack.o.dep + " to " + g.pickBack.o.arr + ". Chosen by the travel policy. Bags are extra.") + src(a.flights.source + ", recorded " + a.recorded, a.flights.url),
-        money(flights), n + " adults", "Booking page", a.flights.url) +
+        money(flights), n + " adults", go("Book out", outUrl) + "<br>" + go("Book back", backUrl)) +
       row("Car", g.car.name + ", " + g.car.cls,
         esc(r.airport.name + " terminal, " + shortDate(t.outDay) + " to " + shortDate(t.backDay) + ". The cheapest SUV of the options compared.") + src(a.cars.source + ", recorded " + a.recorded, a.cars.url),
-        money(g.car.price), "listed price", "Booking page", a.cars.url) +
+        money(g.car.price), "listed price", go("Book car", a.cars.url)) +
       row("Rooms", g.room.name + ", " + plural(t.rooms, g.room.room),
         esc(plural(t.nights, "night") + " from " + shortDate(t.outDay) + ". Free cancellation, score " + g.room.score.toFixed(1) + ". The lowest price of the options compared.") + src(a.rooms.source + ", recorded " + a.recorded, a.rooms.url),
-        money(rooms), money(g.room.price) + " a room", "Booking page", roomUrl) +
+        money(rooms), money(g.room.price) + " a room", go("Book rooms", roomUrl)) +
       row("Freight", "Road freight, Sydney to " + r.town,
         esc(t.roadKm.toLocaleString("en-AU") + " km. Send by " + shortDate(t.freightBy) + ". The quote request is written."),
-        "Quote", "", "Quote request", mailto(freightRequest(hero)));
+        "Quote", "", go("Send request", mailto(freightRequest(hero))));
     $("total").textContent = money(flights + g.car.price + rooms);
     $("total-note").textContent = "for " + plural(n, "person") + ", before freight";
     $("done").innerHTML =
