@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Station demo day kit</title>
+<meta name="description" content="Turn a demo request into a travel plan, a run sheet, a kit list and guest messages. Unofficial work sample by Arjun Kulshrestha.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400..700&family=TASA+Orbiter:wght@400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#241E17; --mute:rgba(36,30,23,.66); --faint:rgba(36,30,23,.42); --line:rgba(36,30,23,.14);
+  --paper:#FAF7F0; --sand:#EAE2D3; --accent:#9A3E17; --on-accent:#F3EDE0;
+  --display:"TASA Orbiter",system-ui,-apple-system,sans-serif;
+  --text:"Rethink Sans",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.55 var(--text)}
+a{color:var(--accent);text-underline-offset:3px}
+.bar{background:var(--sand);border-bottom:1px solid var(--line)}
+.bar div{max-width:880px;margin:0 auto;padding:16px 20px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.bar strong{font:700 17px/1 var(--display);letter-spacing:.02em;text-transform:uppercase}
+.bar span{font-size:13px;color:var(--mute)}
+main{max-width:880px;margin:0 auto;padding:8px 20px 72px}
+section{padding:36px 0 0}
+.eyebrow{font:500 12px/1.2 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px solid var(--ink);padding-bottom:10px;margin-bottom:4px}
+.head .eyebrow{margin:0}
+h1{font:700 40px/1.08 var(--display);letter-spacing:-.015em;margin:0}
+.sub{color:var(--mute);margin:6px 0 0}
+.fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px 24px}
+label{display:block;font-size:13px;color:var(--mute);margin:0 0 2px}
+input,select,textarea{width:100%;font:400 17px/1.3 var(--text);color:var(--ink);background:transparent;border:0;border-bottom:1.5px solid rgba(36,30,23,.3);border-radius:0;padding:6px 2px;appearance:none;-webkit-appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 9px) 55%,calc(100% - 4px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:20px;text-overflow:ellipsis}
+input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--accent)}
+input::placeholder{color:var(--faint)}
+.err{color:var(--accent);font-size:13px;margin:4px 0 0}
+button{font:500 15px/1 var(--text);cursor:pointer;border-radius:4px;padding:12px 18px;border:1.5px solid var(--ink);background:transparent;color:var(--ink)}
+button:hover{background:rgba(36,30,23,.06)}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button.primary:hover{background:#873613}
+button.text{border:0;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font-weight:400;font-size:14px;border-radius:0}
+button.text:hover{background:transparent;color:var(--ink)}
+.actions{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:24px}
+.status{font-size:14px;color:var(--mute)}
+.row{display:grid;grid-template-columns:132px minmax(0,1fr);gap:4px 20px;padding:14px 0;border-bottom:1px solid var(--line)}
+.row .k{font:500 12px/1.9 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.row .v{font:600 20px/1.25 var(--display);letter-spacing:-.005em}
+.row .d{color:var(--mute);font-size:15px;margin-top:2px}
+.src{font-size:13px;color:var(--faint);white-space:nowrap}
+.src:hover{color:var(--accent)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;vertical-align:top;padding:12px 16px 12px 0;border-bottom:1px solid var(--line);font-size:15.5px}
+th{font:500 12px/1.2 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding-top:14px}
+td.t{white-space:nowrap;font:600 15.5px/1.55 var(--display);font-variant-numeric:tabular-nums;width:104px}
+td.roc{color:var(--mute);width:34%}
+tr.band td{font:500 12px/1.2 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:22px 0 8px;border-bottom:1px solid var(--ink)}
+.note{color:var(--mute);font-size:14px;margin:12px 0 0}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px}
+ul.list,ol.list{margin:0;padding:0;list-style:none;counter-reset:q}
+.list li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:15.5px}
+.list input{width:17px;height:17px;flex:none;margin:3px 0 0;padding:0;border:1.5px solid rgba(36,30,23,.45);border-radius:3px;appearance:auto;-webkit-appearance:auto;accent-color:var(--accent)}
+.list label{margin:0;font-size:15.5px;color:inherit}
+ol.list li{counter-increment:q}
+ol.list li::before{content:counter(q);font:600 15.5px/1.55 var(--display);color:var(--accent);min-width:17px}
+details{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;padding:14px 0;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary b{font:600 17px/1.3 var(--display)}
+summary span{color:var(--mute);font-size:14px}
+summary::after{content:"+";color:var(--accent);font:400 20px/1 var(--text);margin-left:auto}
+details[open]>summary::after{content:"\2212"}
+.msg{white-space:pre-wrap;font:400 15px/1.6 var(--text);margin:0 0 12px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:4px}
+.body{padding:0 0 18px}
+.body p{margin:0 0 10px;max-width:66ch}
+.body h3{font:500 12px/1.2 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:18px 0 8px}
+.body ul{margin:0;padding-left:18px}
+.body li{padding:2px 0;font-size:15px}
+.ed-row{display:grid;grid-template-columns:84px minmax(0,1fr) minmax(0,1fr) auto;gap:14px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+.ed-row textarea{font-size:15px;resize:vertical;min-height:52px}
+.ed-row input{font-size:15px}
+.ed-band{font:500 12px/1.2 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:22px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--ink)}
+.ed-arrive{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:14px 0 0;font-size:15.5px}
+.ed-arrive input{width:72px;text-align:center}
+.ed-arrive label{font-size:15.5px;color:var(--ink);margin:0}
+footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--line);font-size:13.5px;color:var(--mute)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:4px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (max-width:720px){
+  h1{font-size:30px}
+  .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two{grid-template-columns:minmax(0,1fr)}
+  .row{grid-template-columns:minmax(0,1fr)}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tr{border-bottom:1px solid var(--line);padding:10px 0}
+  tr.band{padding:0;border:0}
+  td{border:0;padding:2px 0}
+  td.t,td.roc{width:auto}
+  td.roc:not(:empty)::before{content:"Sydney: ";color:var(--faint)}
+  .ed-row{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:420px){.fields{grid-template-columns:minmax(0,1fr)}}
+@media print{
+  body{background:#fff;font-size:12px}
+  .bar{background:#fff}
+  .no-print,.toast{display:none!important}
+  section{padding-top:20px}
+  tr,li,.row{break-inside:avoid}
+  summary::after{content:""}
+}
+</style>
+</head>
+<body>
+
+<div class="bar"><div>
+  <strong>Station demo day kit</strong>
+  <span>Unofficial work sample by Arjun Kulshrestha. Not a Brumby product.</span>
+</div></div>
+
+<main>
+
+<section class="no-print" aria-labelledby="h-req">
+  <p class="eyebrow" id="h-req">Demo request</p>
+  <div class="fields">
+    <div>
+      <label for="f-region">Where is the stock?</label>
+      <select id="f-region"></select>
+    </div>
+    <div id="other-wrap" hidden>
+      <label for="f-town">Nearest town</label>
+      <input id="f-town" type="text" placeholder="Roma" autocomplete="off">
+      <p class="err" id="e-town"></p>
+    </div>
+    <div>
+      <label for="f-head">How many head?</label>
+      <input id="f-head" type="number" min="1" step="1" value="1800" inputmode="numeric">
+      <p class="err" id="e-head"></p>
+    </div>
+    <div>
+      <label for="f-reason">Main reason</label>
+      <select id="f-reason"></select>
+    </div>
+    <div>
+      <label for="f-freq">How often does the mob move?</label>
+      <select id="f-freq"></select>
+    </div>
+    <div>
+      <label for="f-date">Demo date</label>
+      <input id="f-date" type="date">
+      <p class="err" id="e-date"></p>
+    </div>
+    <div>
+      <label for="f-guests">Guests</label>
+      <input id="f-guests" type="number" min="1" step="1" value="20" inputmode="numeric">
+      <p class="err" id="e-guests"></p>
+    </div>
+    <div>
+      <label for="f-prop">Property (optional)</label>
+      <input id="f-prop" type="text" placeholder="Glen Alpine" autocomplete="off">
+    </div>
+    <div>
+      <label for="f-host">Host (optional)</label>
+      <input id="f-host" type="text" placeholder="Pat" autocomplete="off">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="primary" id="b-build" type="button">Build run sheet &rarr;</button>
+    <span class="status" id="status" role="status"></span>
+  </div>
+</section>
+
+<div id="out" hidden>
+
+<section aria-labelledby="h-plan">
+  <h1 id="h-plan"></h1>
+  <p class="sub" id="plan-sub"></p>
+</section>
+
+<section aria-labelledby="h-checks">
+  <div class="head"><p class="eyebrow" id="h-checks">Checks</p></div>
+  <div id="checks"></div>
+</section>
+
+<section aria-labelledby="h-run">
+  <div class="head">
+    <p class="eyebrow" id="h-run">Run sheet</p>
+    <button type="button" class="text no-print" id="b-edit">Edit schedule</button>
+  </div>
+  <div id="run-view">
+    <table id="run">
+      <thead><tr><th>Time</th><th>Station crew</th><th>Sydney operations centre</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="note" id="talk"></p>
+    <p class="note">This schedule is a default template. The times follow sunrise. Edit the schedule to match your demo, and the kit keeps your version.</p>
+  </div>
+  <div id="run-edit" hidden></div>
+</section>
+
+<section>
+  <div class="two">
+    <div aria-labelledby="h-kit">
+      <div class="head"><p class="eyebrow" id="h-kit">Kit list</p></div>
+      <ul class="list" id="kit"></ul>
+    </div>
+    <div aria-labelledby="h-q">
+      <div class="head"><p class="eyebrow" id="h-q">Ask the Chief Remote Pilot</p></div>
+      <ol class="list" id="questions"></ol>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-msg">
+  <div class="head"><p class="eyebrow" id="h-msg">Guest messages</p></div>
+  <div id="msgs"></div>
+</section>
+
+<section class="no-print" aria-labelledby="h-exp">
+  <div class="head"><p class="eyebrow" id="h-exp">Export</p></div>
+  <div class="actions" style="margin-top:16px">
+    <button type="button" id="b-notion">Copy for Notion</button>
+    <button type="button" id="b-ics">Calendar file</button>
+    <button type="button" id="b-link">Copy link</button>
+    <button type="button" id="b-print">Print</button>
+  </div>
+</section>
+
+</div>
+
+<section aria-labelledby="h-notes">
+  <div class="head"><p class="eyebrow" id="h-notes">Notes and sources</p></div>
+  <details>
+    <summary><b>How the kit thinks Brumby operates</b></summary>
+    <div class="body"><ul id="assume"></ul></div>
+  </details>
+  <details>
+    <summary><b>What I cut, what I guessed, what is next</b></summary>
+    <div class="body">
+      <h3>Cut</h3>
+      <p>Costs, catering detail and United States ranch demos. The role has domestic travel, so I kept to three Australian regions.</p>
+      <h3>Guessed</h3>
+      <p>The demo format, the times and the kit list. I have not been to a Brumby demo day. For this reason the schedule is a template that you can edit.</p>
+      <h3>Next</h3>
+      <p>Phone three graziers and ask what makes a demo day worth the drive. Then add a 2027 field day calendar.</p>
+      <h3>Built</h3>
+      <p>With Claude Code, in one evening. Each fact has a link to its source.</p>
+    </div>
+  </details>
+  <details>
+    <summary><b>Sources</b> <span id="checked"></span></summary>
+    <div class="body">
+      <ul id="sources"></ul>
+      <p style="margin-top:12px">Weather and town search by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>. Sunrise is calculated from the date and the location.</p>
+    </div>
+  </details>
+</section>
+
+</main>
+
+<footer>
+  Unofficial. Arjun Kulshrestha built this page for his Operations Associate application. It is not a Brumby product and it uses public information only.
+  <a href="https://www.linkedin.com/in/arjun-kulshrestha" target="_blank" rel="noopener">LinkedIn</a>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="regions.js"></script>
+<script>
+(function () {
+  var D = window.KIT_DATA;
+  var $ = function (id) { return document.getElementById(id); };
+  var state = null, editing = null;
+  var TPL_KEY = "demoDayKit.template.v1";
+
+  var BOM = "https://media.bom.gov.au/social/blog/1989/the-wet-and-the-dry-seasons-in-the-tropics/";
+  var FAQ = "https://brumby.com/#faq";
+  var BLOG = "https://brumby.com/blog/posts/rotational-grazing.html";
+
+  var DEMOS = {
+    muster: {
+      crew: "Live muster. Move one mob from the first paddock, through the gate, to the next paddock. Guests watch the paddock and the phone.",
+      roc: "Pilot supervises the muster flight.",
+      short: "move a mob from one paddock to the next"
+    },
+    monitor: {
+      crew: "Monitor flight. Find and count the mob. Check the troughs and the fence line. Show the report on the phone.",
+      roc: "Pilot supervises the monitor flight.",
+      short: "count the mob and check the troughs and fences from the air"
+    },
+    pasture: {
+      crew: "Pasture flight. Measure the standing dry matter in two paddocks. Show which paddock is ready.",
+      roc: "Pilot supervises the pasture flight.",
+      short: "measure the feed in two paddocks from the air"
+    }
+  };
+  var ORDER = {
+    "Increased monitoring and control": ["monitor", "muster"],
+    "Time savings": ["muster", "monitor"],
+    "Better pasture utilisation": ["pasture", "muster"],
+    "Higher stocking rates": ["pasture", "muster"],
+    "Less manual labour": ["muster", "monitor"],
+    "Something else": ["muster", "monitor"]
+  };
+  var TALK = {
+    "More than twice per week": "The host moves the mob often. Show the labour hours that the drone gives back.",
+    "1 to 2 times per week": "The host moves the mob each week. Show the labour hours that the drone gives back.",
+    "Every 1 to 2 weeks": "Show how a daily move becomes possible without more labour.",
+    "Less than monthly or set-stocked": "Start with the reason to rotate. The Brumby post on rotational grazing has the argument."
+  };
+  var BANDS = { before: "Day before", day: "Demo day", after: "After" };
+
+  // The schedule logic. Day steps are minutes from guest arrival. Guest arrival follows sunrise.
+  var DEFAULT_TPL = {
+    arrive: 60,
+    rows: [
+      { band: "before", when: "Travel", crew: "Travel to {town}. Collect the hire vehicle. Clean the vehicle and boots before entry.", roc: "" },
+      { band: "before", when: "Afternoon", crew: "Site walk with the host. Agree on the mob, the two paddocks and the gate. Set up the dock. Test the connection.", roc: "Rehearsal flight with the crew on the phone." },
+      { band: "day", o: -90, crew: "Crew at the dock. Power on. Connection check.", roc: "Pilot logs in. Voice check with the crew." },
+      { band: "day", o: -60, key: "gonogo", crew: "Host confirms that the mob is in the first paddock and the gate is open.", roc: "Pre-flight checks. Weather check against the limits. Go or no-go call." },
+      { band: "day", o: 0, key: "arrive", crew: "Guests arrive. Sign in. Tea and coffee.", roc: "Aircraft ready in the dock." },
+      { band: "day", o: 15, crew: "Welcome by the host. Safety brief. Show guests where to stand.", roc: "" },
+      { band: "day", o: 30, key: "demo1", crew: "{demo1}", roc: "{pilot1}" },
+      { band: "day", o: 75, crew: "Smoko and questions. Guests look at the report on the phone.", roc: "Aircraft charges in the dock." },
+      { band: "day", o: 105, key: "demo2", crew: "{demo2}", roc: "{pilot2}" },
+      { band: "day", o: 135, key: "close", crew: "Close. Explain how a pilot program starts. Collect contact details.", roc: "" },
+      { band: "day", o: 165, crew: "Pack down. Thank the host.", roc: "Debrief call. Record each fault and each guest question." },
+      { band: "after", when: "Day +1", crew: "Send the follow-up message to each guest. Add the photos to the asset library.", roc: "" },
+      { band: "after", when: "Day +7", crew: "Call each guest who asked about a pilot program.", roc: "" }
+    ]
+  };
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function loadTpl() {
+    try {
+      var t = JSON.parse(localStorage.getItem(TPL_KEY));
+      if (t && Array.isArray(t.rows) && typeof t.arrive === "number") return t;
+    } catch (e) {}
+    return clone(DEFAULT_TPL);
+  }
+  function saveTpl(t) { try { localStorage.setItem(TPL_KEY, JSON.stringify(t)); } catch (e) {} }
+  function clearTpl() { try { localStorage.removeItem(TPL_KEY); } catch (e) {} }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function hm(min) {
+    min = ((min % 1440) + 1440) % 1440;
+    return pad(Math.floor(min / 60)) + ":" + pad(min % 60);
+  }
+  function hm12(min) {
+    min = ((min % 1440) + 1440) % 1440;
+    var h = Math.floor(min / 60), m = min % 60;
+    return (h % 12 === 0 ? 12 : h % 12) + (m ? ":" + pad(m) : "") + (h < 12 ? " am" : " pm");
+  }
+  function isoDate(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function parseISO(s) { var p = s.split("-"); return { y: +p[0], m: +p[1], d: +p[2] }; }
+  function longDate(s) {
+    var p = parseISO(s);
+    return new Date(Date.UTC(p.y, p.m - 1, p.d, 12)).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  }
+  function shiftDate(s, days) {
+    var p = parseISO(s);
+    var t = new Date(Date.UTC(p.y, p.m - 1, p.d + days, 12));
+    return t.getUTCFullYear() + "-" + pad(t.getUTCMonth() + 1) + "-" + pad(t.getUTCDate());
+  }
+  function src(name, url) {
+    return url ? ' <a class="src" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(name) + '">Source</a>' : "";
+  }
+
+  // Sunrise in UTC minutes from 00:00 UTC of the given date (NOAA general solar position equations).
+  function sunriseUtcMinutes(y, m, d, lat, lon) {
+    var n = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 86400000) + 1;
+    var g = 2 * Math.PI / 365 * (n - 1);
+    var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var dec = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var la = lat * Math.PI / 180;
+    var x = Math.cos(90.833 * Math.PI / 180) / (Math.cos(la) * Math.cos(dec)) - Math.tan(la) * Math.tan(dec);
+    if (x > 1 || x < -1) return 360;
+    return 720 - 4 * (lon + Math.acos(x) * 180 / Math.PI) - eq;
+  }
+  function tzOffsetMinutes(dateUtc, tz) {
+    var parts = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(dateUtc);
+    var o = {};
+    parts.forEach(function (p) { o[p.type] = p.value; });
+    return Math.round((Date.UTC(+o.year, +o.month - 1, +o.day, +o.hour, +o.minute) - dateUtc.getTime()) / 60000);
+  }
+
+  function fillSelect(el, items) {
+    el.innerHTML = items.map(function (it) { return '<option value="' + esc(it.v) + '">' + esc(it.t) + "</option>"; }).join("");
+  }
+  function plain(list) { return list.map(function (x) { return { v: x, t: x }; }); }
+
+  function init() {
+    fillSelect($("f-region"), D.regions.map(function (r) { return { v: r.id, t: r.label }; }).concat([{ v: "other", t: "Another town" }]));
+    fillSelect($("f-reason"), plain(D.reasons));
+    fillSelect($("f-freq"), plain(D.frequencies));
+    $("f-reason").value = "Less manual labour";
+    $("f-freq").value = "Every 1 to 2 weeks";
+    // Default: the first Wednesday that is 6 or more days away, so the live forecast is open.
+    var d = new Date(); d.setDate(d.getDate() + 6);
+    while (d.getDay() !== 3) d.setDate(d.getDate() + 1);
+    $("f-date").value = isoDate(d);
+    readLink();
+
+    $("checked").textContent = "Checked " + D.checked;
+    $("assume").innerHTML = D.operating.map(function (o) { return "<li>" + esc(o.text) + src(o.source, o.url) + "</li>"; }).join("");
+    var seen = {}, list = [];
+    function add(name, url) { if (!seen[url]) { seen[url] = 1; list.push({ name: name, url: url }); } }
+    D.regions.forEach(function (r) { ["why", "flight", "drive", "climate"].forEach(function (k) { add(r[k].source, r[k].url); }); });
+    D.operating.forEach(function (o) { add(o.source, o.url); });
+    $("sources").innerHTML = list.map(function (s) { return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></li>"; }).join("");
+
+    $("f-region").addEventListener("change", function () { $("other-wrap").hidden = this.value !== "other"; });
+    ["f-town", "f-head", "f-date", "f-guests"].forEach(function (id) {
+      $(id).addEventListener("input", function () { $("e-" + id.slice(2)).textContent = ""; });
+    });
+    $("b-build").addEventListener("click", build);
+    $("b-notion").addEventListener("click", function () { copy(markdown(), "Copied. Paste it into Notion."); });
+    $("b-ics").addEventListener("click", downloadIcs);
+    $("b-link").addEventListener("click", function () { copy(link(), "Link copied."); });
+    $("b-print").addEventListener("click", function () { window.print(); });
+    $("b-edit").addEventListener("click", openEditor);
+    $("run-edit").addEventListener("click", editorClick);
+    $("msgs").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-i]");
+      if (b && state) copy(state.messages[+b.getAttribute("data-i")].body, "Message copied.");
+    });
+    var wasOpen = [];
+    window.addEventListener("beforeprint", function () {
+      wasOpen = [];
+      document.querySelectorAll("details").forEach(function (x) { wasOpen.push(x.open); x.open = true; });
+    });
+    window.addEventListener("afterprint", function () {
+      document.querySelectorAll("details").forEach(function (x, i) { x.open = !!wasOpen[i]; });
+    });
+    build();
+  }
+
+  // A link holds the request only. It does not hold the property name or the host name.
+  function link() {
+    var q = new URLSearchParams();
+    var id = $("f-region").value;
+    q.set("where", id === "other" ? $("f-town").value.trim() : id);
+    q.set("date", $("f-date").value);
+    q.set("head", $("f-head").value);
+    q.set("guests", $("f-guests").value);
+    q.set("reason", String($("f-reason").selectedIndex));
+    q.set("moves", String($("f-freq").selectedIndex));
+    return location.origin + location.pathname + "?" + q.toString();
+  }
+  function readLink() {
+    var q = new URLSearchParams(location.search);
+    var where = q.get("where");
+    if (where) {
+      var known = D.regions.some(function (r) { return r.id === where; });
+      $("f-region").value = known ? where : "other";
+      if (!known) { $("f-town").value = where.slice(0, 60); $("other-wrap").hidden = false; }
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(q.get("date") || "")) $("f-date").value = q.get("date");
+    if (+q.get("head") >= 1) $("f-head").value = Math.round(+q.get("head"));
+    if (+q.get("guests") >= 1) $("f-guests").value = Math.round(+q.get("guests"));
+    var ri = +q.get("reason"), fi = +q.get("moves");
+    if (q.has("reason") && ri >= 0 && ri < D.reasons.length) $("f-reason").selectedIndex = ri;
+    if (q.has("moves") && fi >= 0 && fi < D.frequencies.length) $("f-freq").selectedIndex = fi;
+  }
+
+  function validate() {
+    var ok = true;
+    if (!(+$("f-head").value >= 1)) { $("e-head").textContent = "Enter the number of head."; ok = false; }
+    if (!(+$("f-guests").value >= 1)) { $("e-guests").textContent = "Enter the number of guests."; ok = false; }
+    if (!$("f-date").value) { $("e-date").textContent = "Select a date."; ok = false; }
+    if ($("f-region").value === "other" && !$("f-town").value.trim()) { $("e-town").textContent = "Enter a town."; ok = false; }
+    return ok;
+  }
+
+  function resolveRegion() {
+    var id = $("f-region").value;
+    if (id !== "other") return Promise.resolve(D.regions.filter(function (r) { return r.id === id; })[0]);
+    var url = "https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&countryCode=AU&name=" + encodeURIComponent($("f-town").value.trim());
+    return fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+      var au = (j.results || []).filter(function (x) { return x.country_code === "AU"; });
+      if (!au.length) throw new Error("notfound");
+      var g = au[0];
+      return {
+        id: "other", custom: true, town: g.name,
+        label: g.name + (g.admin1 ? ", " + g.admin1 : ""),
+        lat: g.latitude, lon: g.longitude, tz: g.timezone || "Australia/Sydney",
+        tropical: g.latitude > -23.44
+      };
+    });
+  }
+
+  function build() {
+    if (!validate()) return;
+    $("status").textContent = "Building";
+    resolveRegion().then(function (region) {
+      state = plan({
+        region: region,
+        head: Math.round(+$("f-head").value),
+        reason: $("f-reason").value,
+        freq: $("f-freq").value,
+        date: $("f-date").value,
+        guests: Math.round(+$("f-guests").value),
+        prop: $("f-prop").value.trim(),
+        host: $("f-host").value.trim()
+      });
+      closeEditor();
+      render(state);
+      $("out").hidden = false;
+      $("status").textContent = "";
+      loadWeather(state);
+    }).catch(function (e) {
+      $("status").textContent = "";
+      $("e-town").textContent = e && e.message === "notfound" ? "Town not found. Check the spelling." : "The town search did not respond. Try again.";
+    });
+  }
+
+  function plan(req) {
+    var p = parseISO(req.date), r = req.region, tpl = loadTpl();
+    var srUtc = Math.round(sunriseUtcMinutes(p.y, p.m, p.d, r.lat, r.lon));
+    var off = tzOffsetMinutes(new Date(Date.UTC(p.y, p.m - 1, p.d, 0, 0) + srUtc * 60000), r.tz);
+    var sunrise = (((srUtc + off) % 1440) + 1440) % 1440;
+    var G = Math.ceil((sunrise + tpl.arrive) / 15) * 15;
+    var demos = ORDER[req.reason].map(function (k) { return DEMOS[k]; });
+    function fill(t) {
+      return String(t || "").replace(/\{town\}/g, r.town).replace(/\{demo1\}/g, demos[0].crew).replace(/\{demo2\}/g, demos[1].crew)
+        .replace(/\{pilot1\}/g, demos[0].roc).replace(/\{pilot2\}/g, demos[1].roc);
+    }
+    var day = tpl.rows.filter(function (x) { return x.band === "day"; }).sort(function (a, b) { return a.o - b.o; });
+    function at(key, fallback) {
+      var hit = day.filter(function (x) { return x.key === key; })[0];
+      return G + (hit ? hit.o : fallback);
+    }
+    var rows = [];
+    ["before", "day", "after"].forEach(function (band) {
+      var set = band === "day" ? day : tpl.rows.filter(function (x) { return x.band === band; });
+      if (!set.length) return;
+      rows.push({ band: band === "day" ? "Demo day, " + longDate(req.date) : BANDS[band] });
+      set.forEach(function (x) { rows.push({ t: band === "day" ? hm(G + x.o) : x.when, timed: band === "day", crew: fill(x.crew), roc: fill(x.roc) }); });
+    });
+    var first = day.length ? day[0].o : -90, last = day.length ? day[day.length - 1].o : 165;
+    var s = {
+      req: req, sunrise: sunrise, G: G, tzOffset: off, demos: demos, rows: rows,
+      start: G + first, end: G + last + 30,
+      firstFlight: at("demo1", 30), close: at("close", 135), callBy: at("gonogo", -60),
+      weather: null
+    };
+    var g = req.guests, screens = Math.max(1, Math.ceil(g / 10));
+    s.kit = [
+      "Dock, aircraft and spares. Get the list from engineering.",
+      "Starlink or 4G modem, with power for the dock.",
+      screens + (screens > 1 ? " screens" : " screen") + " for the live view (1 for each 10 guests).",
+      g + " chairs, and shade for " + g + " guests.",
+      (g * 2) + " L of water (2 L for each guest). Tea, coffee and smoko.",
+      "First aid kit, sunscreen and insect repellent.",
+      "UHF radio. Ask the host for the station channel.",
+      "Sign-in sheet with a photo consent line.",
+      "Camera for photos and video for the asset library.",
+      "Printed run sheets for the crew and the host.",
+      "Caps or other merch for " + g + " guests."
+    ];
+    s.questions = [
+      "Is this property inside the approved operating area for the aircraft?",
+      "What is the minimum distance between the guests and the dock and flight path?",
+      "What are the wind, rain and temperature limits for the go or no-go call?",
+      "Are there airstrips, helicopter musters or spray aircraft near the property on the day? Who tells them?",
+      "What does the crew do if the link to Sydney stops during a demo?",
+      "Who makes the stop call, and what do we tell the guests?"
+    ];
+    s.messages = messages(s);
+    return s;
+  }
+
+  function messages(s) {
+    var r = s.req.region, req = s.req;
+    var where = (req.prop ? req.prop + " near " : "a property near ") + r.town;
+    var day = longDate(req.date);
+    return [
+      {
+        title: "Invite", when: "Send 3 weeks before",
+        body: "Subject: Drone mustering demo near " + r.town + ", " + day + "\n\n" +
+          "Hi [name],\n\n" +
+          (req.host || "Our host") + " is having Brumby out at " + where + " on " + day + ". You're welcome to come and watch.\n\n" +
+          "Brumby builds drones that move and check cattle on their own. On the day we'll " + s.demos[0].short + ", then " + s.demos[1].short + ". You'll see it in the paddock and on the phone at the same time.\n\n" +
+          "Start: " + hm12(s.G) + ". We'll finish by " + hm12(s.close) + ". Tea, coffee and smoko are on us.\n\n" +
+          "Please reply with your name and how many are coming, so we can cater. Bring a hat and boots, and please come with a clean vehicle.\n\n" +
+          "Thanks,\n[your name]\nBrumby"
+      },
+      {
+        title: "Reminder", when: "Send the day before",
+        body: "Subject: Tomorrow: Brumby demo near " + r.town + ", " + hm12(s.G) + " start\n\n" +
+          "Hi [name],\n\n" +
+          "A quick reminder for tomorrow.\n\n" +
+          "Where: " + where + ". [directions from the host]\n" +
+          "When: " + hm12(s.G) + ". The first flight is at " + hm12(s.firstFlight) + ", so please be on time.\n" +
+          "Bring: hat, boots and a water bottle.\n\n" +
+          "Phone signal can be patchy on the way in, so save these directions now. If the weather stops the flight, we'll text you by " + hm12(s.callBy) + ".\n\n" +
+          "See you there,\n[your name]\nBrumby"
+      },
+      {
+        title: "Follow-up", when: "Send the day after",
+        body: "Subject: Thanks for coming out to " + (req.prop || r.town) + "\n\n" +
+          "Hi [name],\n\n" +
+          "Thanks for coming out yesterday, and thanks to " + (req.host || "our host") + " for having us.\n\n" +
+          "You saw the drone " + s.demos[0].short + ", then " + s.demos[1].short + ". Photos from the day are here: [link].\n\n" +
+          "If you'd like to try it on your own place, reply with roughly how many head you run and how often you shift a mob. We'll tell you if a pilot program suits you.\n\n" +
+          "Thanks,\n[your name]\nBrumby"
+      }
+    ];
+  }
+
+  function season(s) {
+    var r = s.req.region, m = parseISO(s.req.date).m;
+    if (r.tropical) {
+      var wet = m >= 10 || m <= 4;
+      return {
+        v: wet ? "Wet season month" : "Dry season month",
+        d: wet ? "The wet season is October to April. Confirm road access with the host before you book travel." : "The dry season is May to September.",
+        name: "Bureau of Meteorology", url: BOM
+      };
+    }
+    if (r.climate) return { v: "No tropical wet season", d: r.climate.text, name: r.climate.source, url: r.climate.url };
+    return { v: "No tropical wet season", d: "This town is south of the tropics. Ask the host about local road conditions." };
+  }
+
+  function checks(s) {
+    var r = s.req.region, out = [], se = season(s);
+    if (r.custom) {
+      var maps = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(r.label + ", Australia");
+      out.push({ k: "Flight", v: "Not in the fact file", d: "Add the nearest airport with a Sydney service before you use this plan." });
+      out.push({ k: "Drive", v: "Open the route", html: '<a href="' + maps + '" target="_blank" rel="noopener">Directions to ' + esc(r.label) + "</a>" });
+    } else {
+      out.push({ k: "Flight", v: r.flight.headline, d: r.flight.text, name: r.flight.source, url: r.flight.url });
+      out.push({ k: "Drive", v: r.drive.headline, d: r.drive.text, name: r.drive.source, url: r.drive.url });
+    }
+    out.push({ k: "Season", v: se.v, d: se.d, name: se.name, url: se.url });
+    out.push({ k: "First light", v: "Sunrise " + hm(s.sunrise), d: "Guests arrive at " + hm(s.G) + ". The crew starts at " + hm(s.start) + "." });
+    out.push({ k: "Weather", v: "Loading", d: "", id: "w" });
+    var over = s.req.head > D.herdLimit;
+    out.push({
+      k: "Mob size", v: s.req.head.toLocaleString("en-AU") + " head",
+      d: over ? "This is above 2,000 head. Use one mob of 2,000 or less for the demo." : "One drone can handle a mob of this size.",
+      name: "Brumby FAQ", url: FAQ
+    });
+    return out;
+  }
+
+  function render(s) {
+    var r = s.req.region;
+    $("h-plan").textContent = (s.req.prop ? s.req.prop + ", " : "") + r.label;
+    $("plan-sub").textContent = longDate(s.req.date) + ". " + s.req.guests + " guests. " + s.req.head.toLocaleString("en-AU") + " head.";
+    $("checks").innerHTML = checks(s).map(function (c) {
+      return '<div class="row"' + (c.id ? ' id="row-' + c.id + '"' : "") + '><div class="k">' + esc(c.k) + '</div><div><div class="v">' + esc(c.v) + '</div><div class="d">' + (c.html || esc(c.d)) + src(c.name, c.url) + "</div></div></div>";
+    }).join("");
+    $("run").querySelector("tbody").innerHTML = s.rows.map(function (row) {
+      if (row.band) return '<tr class="band"><td colspan="3">' + esc(row.band) + "</td></tr>";
+      return '<tr><td class="t">' + esc(row.t) + "</td><td>" + esc(row.crew) + '</td><td class="roc">' + esc(row.roc) + "</td></tr>";
+    }).join("");
+    $("talk").innerHTML = "Talk track: " + esc(TALK[s.req.freq]) + (s.req.freq.indexOf("set-stocked") > -1 ? ' <a class="src" href="' + BLOG + '" target="_blank" rel="noopener">Read the post</a>' : "");
+    $("kit").innerHTML = s.kit.map(function (k, i) { return '<li><input type="checkbox" id="k' + i + '"><label for="k' + i + '">' + esc(k) + "</label></li>"; }).join("");
+    $("questions").innerHTML = s.questions.map(function (q) { return "<li><span>" + esc(q) + "</span></li>"; }).join("");
+    $("msgs").innerHTML = s.messages.map(function (m, i) {
+      return "<details" + (i === 0 ? " open" : "") + "><summary><b>" + esc(m.title) + "</b> <span>" + esc(m.when) + '</span></summary><div class="body"><div class="msg">' + esc(m.body) + '</div><button type="button" class="no-print" data-i="' + i + '">Copy</button></div></details>';
+    }).join("");
+  }
+
+  function setWeather(v, d) {
+    var el = $("row-w");
+    if (!el) return;
+    el.querySelector(".v").textContent = v;
+    el.querySelector(".d").innerHTML = esc(d) + src("Open-Meteo", "https://open-meteo.com/");
+  }
+
+  function loadWeather(s) {
+    var days = Math.round((Date.parse(s.req.date + "T12:00:00Z") - Date.parse(isoDate(new Date()) + "T12:00:00Z")) / 86400000);
+    if (days < 0) { setWeather("Date is in the past", "Select a future date for a forecast."); return; }
+    if (days > 15) { setWeather("Not open yet", "The forecast opens on " + longDate(shiftDate(s.req.date, -15)) + ". The limits come from the Chief Remote Pilot."); return; }
+    var r = s.req.region;
+    var url = "https://api.open-meteo.com/v1/forecast?latitude=" + r.lat + "&longitude=" + r.lon +
+      "&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation_probability&timezone=" + encodeURIComponent(r.tz) +
+      "&start_date=" + s.req.date + "&end_date=" + s.req.date;
+    fetch(url).then(function (x) { return x.json(); }).then(function (j) {
+      if (state !== s) return;
+      var h = j.hourly, from = Math.max(0, Math.floor(s.start / 60)), to = Math.min(23, Math.ceil(s.end / 60));
+      var wind = 0, gust = 0, rain = 0, tmin = 99, tmax = -99, hasRain = false;
+      for (var i = from; i <= to; i++) {
+        wind = Math.max(wind, h.wind_speed_10m[i]);
+        gust = Math.max(gust, h.wind_gusts_10m[i]);
+        if (h.precipitation_probability[i] != null) { rain = Math.max(rain, h.precipitation_probability[i]); hasRain = true; }
+        tmin = Math.min(tmin, h.temperature_2m[i]); tmax = Math.max(tmax, h.temperature_2m[i]);
+      }
+      s.weather = { wind: Math.round(wind), gust: Math.round(gust), rain: hasRain ? Math.round(rain) : null, tmin: Math.round(tmin), tmax: Math.round(tmax), from: from, to: to };
+      setWeather("Wind " + s.weather.wind + " km/h, gusts " + s.weather.gust,
+        pad(from) + ":00 to " + pad(to) + ":00. " + (hasRain ? "Rain chance up to " + s.weather.rain + "%. " : "") + s.weather.tmin + " to " + s.weather.tmax + " °C. The limits come from the Chief Remote Pilot.");
+    }).catch(function () {
+      if (state === s) setWeather("No forecast", "The weather service did not respond. Try again.");
+    });
+  }
+
+  // Schedule editor. It changes the template, and the template stays in this browser.
+  function openEditor() {
+    editing = loadTpl();
+    $("run-view").hidden = true; $("run-edit").hidden = false; $("b-edit").hidden = true;
+    drawEditor();
+  }
+  function closeEditor() {
+    editing = null;
+    $("run-view").hidden = false; $("run-edit").hidden = true; $("b-edit").hidden = false;
+  }
+  function drawEditor() {
+    var h = '<div class="ed-arrive"><label for="ed-arrive">Guests arrive</label><input type="number" id="ed-arrive" step="15" min="0" value="' + esc(editing.arrive) + '"><span>minutes after sunrise.</span></div>' +
+      '<p class="note">Demo day steps use minutes from guest arrival. A negative number is before the guests arrive. {demo1} and {demo2} follow the main reason.</p>';
+    ["before", "day", "after"].forEach(function (band) {
+      h += '<p class="ed-band">' + BANDS[band] + "</p>";
+      editing.rows.forEach(function (row, i) {
+        if (row.band !== band) return;
+        h += '<div class="ed-row" data-i="' + i + '">' +
+          (band === "day"
+            ? '<input class="ed-when" type="number" step="5" value="' + esc(row.o) + '" aria-label="Minutes from guest arrival">'
+            : '<input class="ed-when" type="text" value="' + esc(row.when) + '" aria-label="Label">') +
+          '<textarea class="ed-crew" rows="2" aria-label="Station crew">' + esc(row.crew) + "</textarea>" +
+          '<textarea class="ed-roc" rows="2" aria-label="Sydney operations centre">' + esc(row.roc) + "</textarea>" +
+          '<button type="button" class="text" data-act="del">Remove</button></div>';
+      });
+      h += '<p style="margin:10px 0 0"><button type="button" class="text" data-act="add" data-band="' + band + '">Add step</button></p>';
+    });
+    h += '<div class="actions"><button type="button" class="primary" data-act="save">Save schedule</button><button type="button" data-act="cancel">Cancel</button><button type="button" class="text" data-act="reset">Reset to default</button></div>';
+    $("run-edit").innerHTML = h;
+  }
+  function syncEditor() {
+    editing.arrive = Math.max(0, Math.round(+$("ed-arrive").value || 0));
+    $("run-edit").querySelectorAll(".ed-row").forEach(function (el) {
+      var row = editing.rows[+el.getAttribute("data-i")];
+      var when = el.querySelector(".ed-when").value;
+      if (row.band === "day") row.o = Math.round(+when || 0); else row.when = when.trim() || "Step";
+      row.crew = el.querySelector(".ed-crew").value.trim();
+      row.roc = el.querySelector(".ed-roc").value.trim();
+    });
+  }
+  function editorClick(e) {
+    var b = e.target.closest("button[data-act]");
+    if (!b || !editing) return;
+    var act = b.getAttribute("data-act");
+    if (act === "cancel") { closeEditor(); return; }
+    if (act === "reset") { clearTpl(); closeEditor(); build(); toast("Default schedule restored."); return; }
+    syncEditor();
+    if (act === "del") { editing.rows.splice(+b.closest(".ed-row").getAttribute("data-i"), 1); drawEditor(); return; }
+    if (act === "add") {
+      var band = b.getAttribute("data-band");
+      var same = editing.rows.filter(function (x) { return x.band === band; });
+      var row = band === "day" ? { band: band, o: (same.length ? Math.max.apply(null, same.map(function (x) { return x.o; })) : 0) + 30, crew: "", roc: "" } : { band: band, when: "Step", crew: "", roc: "" };
+      var lastIndex = -1;
+      editing.rows.forEach(function (x, i) { if (x.band === band) lastIndex = i; });
+      if (lastIndex === -1) editing.rows.push(row); else editing.rows.splice(lastIndex + 1, 0, row);
+      drawEditor();
+      return;
+    }
+    if (act === "save") { saveTpl(editing); closeEditor(); build(); toast("Schedule saved in this browser."); }
+  }
+
+  function markdown() {
+    var s = state, r = s.req.region, L = [], se = season(s);
+    L.push("# Demo day: " + (s.req.prop ? s.req.prop + ", " : "") + r.label + ", " + longDate(s.req.date));
+    L.push("");
+    L.push("Request: " + s.req.head.toLocaleString("en-AU") + " head. Main reason: " + s.req.reason + ". Mob moves: " + s.req.freq + ". Guests: " + s.req.guests + ".");
+    L.push("");
+    L.push("## Checks");
+    if (!r.custom) {
+      L.push("- Flight: " + r.flight.headline + ". " + r.flight.text + " (" + r.flight.source + ")");
+      L.push("- Drive: " + r.drive.headline + ". " + r.drive.text + " (" + r.drive.source + ")");
+    }
+    L.push("- Season: " + se.v + ". " + se.d);
+    L.push("- First light: sunrise " + hm(s.sunrise) + ". Guests arrive at " + hm(s.G) + ".");
+    if (s.weather) L.push("- Weather, " + pad(s.weather.from) + ":00 to " + pad(s.weather.to) + ":00: wind " + s.weather.wind + " km/h, gusts " + s.weather.gust + " km/h" + (s.weather.rain != null ? ", rain chance up to " + s.weather.rain + "%" : "") + ", " + s.weather.tmin + " to " + s.weather.tmax + " °C. (Open-Meteo)");
+    L.push("");
+    L.push("## Run sheet");
+    L.push("| Time | Station crew | Sydney operations centre |");
+    L.push("|---|---|---|");
+    s.rows.forEach(function (row) {
+      if (row.band) L.push("| **" + row.band + "** | | |");
+      else L.push("| " + row.t + " | " + row.crew + " | " + row.roc + " |");
+    });
+    L.push("");
+    L.push("## Kit list");
+    s.kit.forEach(function (k) { L.push("- [ ] " + k); });
+    L.push("");
+    L.push("## Ask the Chief Remote Pilot");
+    s.questions.forEach(function (q, i) { L.push((i + 1) + ". " + q); });
+    L.push("");
+    L.push("## Guest messages");
+    s.messages.forEach(function (m) { L.push("### " + m.title + " (" + m.when.toLowerCase() + ")"); L.push("```"); L.push(m.body); L.push("```"); L.push(""); });
+    return L.join("\n");
+  }
+
+  function icsStamp(dateIso, localMin, off) {
+    var p = parseISO(dateIso);
+    var t = new Date(Date.UTC(p.y, p.m - 1, p.d, 0, localMin - off));
+    return t.getUTCFullYear() + pad(t.getUTCMonth() + 1) + pad(t.getUTCDate()) + "T" + pad(t.getUTCHours()) + pad(t.getUTCMinutes()) + "00Z";
+  }
+  function icsText(t) { return String(t).replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\\;"); }
+  function downloadIcs() {
+    var s = state, r = s.req.region, now = new Date();
+    var desc = s.rows.filter(function (x) { return x.timed; }).map(function (x) {
+      return icsText(x.t + " " + x.crew + (x.roc ? " Sydney: " + x.roc : ""));
+    }).join("\\n");
+    var ics = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Station demo day kit//EN", "BEGIN:VEVENT",
+      "UID:demo-" + s.req.date + "-" + r.id + "@demo-day-kit",
+      "DTSTAMP:" + now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + "T" + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + "00Z",
+      "DTSTART:" + icsStamp(s.req.date, s.start, s.tzOffset),
+      "DTEND:" + icsStamp(s.req.date, s.end, s.tzOffset),
+      "SUMMARY:" + icsText("Demo day: " + r.town + (s.req.prop ? " (" + s.req.prop + ")" : "")),
+      "LOCATION:" + icsText(r.label),
+      "DESCRIPTION:" + desc,
+      "END:VEVENT", "END:VCALENDAR"
+    ].join("\r\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+    a.download = "demo-day-" + r.id + "-" + s.req.date + ".ics";
+    document.body.appendChild(a); a.click(); a.remove();
+    toast("Calendar file saved.");
+  }
+
+  function copy(text, done) {
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast(done); } catch (e) { toast("Copy did not work. Select the text and copy it."); }
+      ta.remove();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast(done); }, fallback);
+    else fallback();
+  }
+  var toastTimer;
+  function toast(t) {
+    var el = $("toast"); el.textContent = t; el.classList.add("on");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove("on"); }, 2200);
+  }
+
+  window.__kit = { state: function () { return state; }, markdown: markdown, link: link };
+  init();
+})();
+</script>
+</body>
+</html>
