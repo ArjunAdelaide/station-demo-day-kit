@@ -44,7 +44,8 @@ Do these steps only if the calendar is connected.
 2. Create an all-day hold for each travel day.
 3. Create an all-day event for each deadline from the trip plan.
 4. Start each title with "HOLD" until the bookings are approved. Put the plan link in the description.
-5. If the grazier picks the second date, move the holds. If a person declines the demo, delete the holds.
+5. For an all-day event, give the date at 00:00 UTC. A local midnight with an offset can put the event on the day before. Read the event back and check its date.
+6. If the grazier picks the second date, move the holds. If a person declines the demo, delete the holds.
 
 ## Report format
 

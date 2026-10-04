@@ -385,12 +385,12 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       <ul>
         <li>Inbox: the agent reads the demo requests and the replies. It writes each answer as a draft.</li>
         <li>Slack: the agent posts the request in the demo channel. A person accepts and approves there.</li>
-        <li>Calendar: the agent reads the free days of the crew and the pilot.</li>
+        <li>Calendar: the agent reads the free days of the crew and the pilot, and it makes the holds. In my test the agent read my own Google Calendar for the days around both dates, then made 9 holds for this plan. No hold has a guest.</li>
         <li>Notion: the demo record and the travel policy.</li>
         <li>Intercom: the contact and the follow-up messages.</li>
         <li>Flight search: live options in place of the recorded searches.</li>
       </ul>
-      <p style="margin-top:12px">The agent reads one shared inbox and one channel. It does not read personal mail or direct messages. In this prototype no connection is live. The agent read the test message from a file. The agent instructions are in the repository: <code>skill/demo-intake</code> and <code>skill/demo-trip-agent</code>. I ran the intake steps on the test message, and the record on this page is the result.</p>
+      <p style="margin-top:12px">The agent reads one shared inbox and one channel. It does not read personal mail or direct messages. In my test the calendar connection was live, on my own calendar. The page itself does not connect to a calendar. No other connection in this list was live. The agent read the test message from a file. The agent instructions are in the repository: <code>skill/demo-intake</code> and <code>skill/demo-trip-agent</code>. I ran the intake steps on the test message, and the record on this page is the result.</p>
     </div>
   </details>
   <details>
@@ -1510,7 +1510,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     $("total").textContent = money(flights + g.car.price + rooms);
     $("total-note").textContent = "for " + plural(n, "person") + ", before freight";
     $("done").innerHTML =
-      rowHtml({ k: "Calendar", v: plural(hero.deadlines.length, "deadline") + " and the demo day", d: "From " + shortDate(hero.deadlines[0].date) + " to " + shortDate(hero.deadlines[hero.deadlines.length - 1].date) + "." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="ics">Add to calendar</button></div></div></div>') +
+      rowHtml({ k: "Calendar", v: plural(hero.deadlines.length, "deadline") + " and the demo day", d: "From " + shortDate(hero.deadlines[0].date) + " to " + shortDate(hero.deadlines[hero.deadlines.length - 1].date) + ". In my test the agent put these in Google Calendar as 9 holds. The button gives the same events as a file." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="ics">Add to calendar</button></div></div></div>') +
       rowHtml({ k: "Itinerary", v: "Day-by-day plan for the crew", d: "With blanks for the booking numbers." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="itin">Copy</button></div></div></div>') +
       rowHtml({ k: "Guest invite", v: "Ready to send to the host", d: "Start " + hm12(hero.G) + ", finish by " + hm12(hero.close) + "." }).replace("</div></div></div>", '</div><div class="acts no-print"><a href="' + esc(mailto(hero.messages[0].body)) + '">Open in mail &#8599;</a></div></div></div>') +
       rowHtml({ k: "Slack", v: "Summary for the team channel", d: "The trip, the picks and the total." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="slack">Copy</button></div></div></div>') +

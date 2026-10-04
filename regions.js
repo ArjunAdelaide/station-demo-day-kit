@@ -182,8 +182,8 @@ window.KIT_DATA = {
       { k: "Phone", v: "Not known", note: "", status: "missing" },
       { k: "Herd", v: "1,800 head", note: "It says: about 1,800.", status: "confirmed" },
       { k: "Demo", v: "Live muster, then monitor flight", note: "The main reason is less manual labour.", status: "rule" },
-      { k: "Date", v: "Wed 28 Oct or Wed 4 Nov", note: "The rule is 21 days of notice. The crew calendar sets the date when it is connected.", status: "rule" },
-      { k: "Crew", v: "2 people", note: "The crew calendar sets it when it is connected.", status: "guess" },
+      { k: "Date", v: "Wed 28 Oct or Wed 4 Nov", note: "The rule is 21 days of notice. The agent read my calendar: it has no events on the days around both dates.", status: "rule" },
+      { k: "Crew", v: "2 people", note: "One calendar is connected in this test. A real crew needs each person's calendar.", status: "guess" },
       { k: "Travel", v: "Whitsunday Coast Airport, 66 minutes by road", note: "From the fact file and the road router.", status: "rule" }
     ],
     question: "Hi Pat,\n\nThanks for asking us out. We'd like to bring the drone to your place.\n\nTwo things so we can lock it in:\n1. Where is the property? An address or a map pin is fine.\n2. Which day suits you: Wednesday 28 October or Wednesday 4 November? We start about an hour after sunrise and finish by about 9 am.\n\nA phone number for the day would help too.\n\nThanks,\n[your name]\nBrumby",
