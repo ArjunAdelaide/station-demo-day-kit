@@ -1,0 +1,13 @@
+{
+  "fields": [
+    { "objectTypeId": "0-1", "name": "email", "value": "pat@example.com" },
+    { "objectTypeId": "0-1", "name": "firstname", "value": "Pat" },
+    { "objectTypeId": "0-1", "name": "lastname", "value": "Example" },
+    { "objectTypeId": "0-1", "name": "where_based", "value": "Near Bowen, North Queensland" },
+    { "objectTypeId": "0-1", "name": "herd_size", "value": "About 1,800" },
+    { "objectTypeId": "0-1", "name": "interested_benefit", "value": "Less manual labour" },
+    { "objectTypeId": "0-1", "name": "mob_move_frequency", "value": "Every 1–2 weeks" },
+    { "objectTypeId": "0-1", "name": "demo_timeframe", "value": "In the next few weeks" }
+  ],
+  "context": { "pageUri": "https://example.com/book-a-demo", "pageName": "Book a demo (sample)" }
+}

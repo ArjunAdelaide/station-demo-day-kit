@@ -22,7 +22,13 @@ Live page: https://arjunadelaide.github.io/station-demo-day-kit/
 
 `skill/demo-intake/SKILL.md` has the instructions. The agent reads a demo request from the inbox, fills the demo record with a source and a status for each fact, drafts one question to the grazier for the missing facts, and returns the trip plan link. It sends nothing. A person sends the draft.
 
-`test/demo-request.txt` is a test message. I ran the intake steps on it, and the record on the page is the result. The agent needs an inbox connection to read real mail. It can also use Slack and a calendar when they are connected.
+`test/demo-request.txt` is a test message. I sent it to my own inbox. The agent found it with one search, read it, built the record on the page and wrote the reply as a draft in the same thread. It sent nothing. The agent also read my Google Calendar for the proposed dates and made 9 holds with no guests.
+
+`intake/hubspot_to_record.py` turns a HubSpot form submission into the same record. The Brumby demo form sends its answers to HubSpot, so in a company setup a HubSpot workflow calls the agent with the fields. `test/hubspot-submission.json` and `test/hubspot-webhook.json` are sample inputs with the field names of the form.
+
+```bash
+python3 intake/hubspot_to_record.py test/hubspot-submission.json --received 2026-10-05
+```
 
 ## The booking agent
 
@@ -56,6 +62,8 @@ Each rule is a guess until Brumby sets it. The schedule is a template: select "E
 - `skill/demo-intake/SKILL.md`: the intake agent instructions.
 - `skill/demo-trip-agent/SKILL.md`: the booking agent instructions.
 - `test/demo-request.txt`: a test request message.
+- `intake/hubspot_to_record.py`: the HubSpot form handler.
+- `test/hubspot-submission.json`, `test/hubspot-webhook.json`: sample HubSpot inputs.
 
 ## Run it
 

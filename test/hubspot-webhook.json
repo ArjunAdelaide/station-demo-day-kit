@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "firstname": "Sam",
+    "lastname": "Sample",
+    "email": "sam@example.com",
+    "phone": "0400 000 000",
+    "where_based": "Roma QLD",
+    "herd_size": "600",
+    "interested_benefit": "Better pasture utilisation",
+    "mob_move_frequency": "Less than monthly / set-stocked",
+    "demo_timeframe": "ASAP"
+  }
+}

@@ -170,23 +170,24 @@ window.KIT_DATA = {
     demoDate: "2026-10-28",
     travellers: 2,
     request: {
-      received: "Mon 5 Oct 2026", channel: "Test message, read from a file",
+      received: "Mon 5 Oct 2026", channel: "Test message, read from my inbox by the agent",
       name: "Pat Example", prop: "", head: 1800, guests: 20,
       reason: "Less manual labour", freq: "Every 1 to 2 weeks", timing: "In the next few weeks"
     },
-    // The demo record that the intake steps made from the test message in test/demo-request.txt.
+    // The demo record that the intake agent made from the test message. It read the message from a Gmail inbox on 5 Oct 2026.
     record: [
       { k: "Who", v: "Pat Example, pat@example.com", note: "", status: "confirmed" },
       { k: "Town", v: "Bowen, QLD", note: "It says: near Bowen, North Queensland.", status: "confirmed" },
       { k: "Property address", v: "Not known", note: "", status: "missing" },
       { k: "Phone", v: "Not known", note: "", status: "missing" },
+      { k: "Guests", v: "Not known", note: "", status: "missing" },
       { k: "Herd", v: "1,800 head", note: "It says: about 1,800.", status: "confirmed" },
       { k: "Demo", v: "Live muster, then monitor flight", note: "The main reason is less manual labour.", status: "rule" },
       { k: "Date", v: "Wed 28 Oct or Wed 4 Nov", note: "The rule is 21 days of notice. The agent read my calendar: it has no events on the days around both dates.", status: "rule" },
       { k: "Crew", v: "2 people", note: "One calendar is connected in this test. A real crew needs each person's calendar.", status: "guess" },
       { k: "Travel", v: "Whitsunday Coast Airport, 66 minutes by road", note: "From the fact file and the road router.", status: "rule" }
     ],
-    question: "Hi Pat,\n\nThanks for asking us out. We'd like to bring the drone to your place.\n\nTwo things so we can lock it in:\n1. Where is the property? An address or a map pin is fine.\n2. Which day suits you: Wednesday 28 October or Wednesday 4 November? We start about an hour after sunrise and finish by about 9 am.\n\nA phone number for the day would help too.\n\nThanks,\n[your name]\nBrumby",
+    question: "Hi Pat,\n\nThanks for asking us out. We'd like to bring the drone to your place.\n\nTwo things so we can lock it in:\n1. Where is the property? An address or a map pin is fine.\n2. Which day suits you: Wednesday 28 October or Wednesday 4 November? We start about an hour after sunrise and finish by about 9 am.\n\nA phone number for the day would help too. And roughly how many neighbours would you like to invite?\n\nThanks,\n[your name]\nBrumby",
     flights: {
       source: "Google Flights",
       url: "https://www.google.com/travel/flights?hl=en-AU&gl=au&curr=AUD&q=Flights%20from%20SYD%20to%20PPP%20on%202026-10-27%20through%202026-10-28%20for%202%20adults",

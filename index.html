@@ -164,7 +164,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 <section aria-labelledby="h-hero">
   <p class="eyebrow">Prototype</p>
   <h1 id="h-hero">A demo request comes in. The trip plans itself.</h1>
-  <p class="lead">This is one automation I would build as Operations Associate. The request below is a test message. The agent reads it, builds the demo record and asks the grazier for the missing facts. The flight, car and room options are real search results from <span id="hero-rec"></span>. A person approves each booking with one press.</p>
+  <p class="lead">This is one automation I would build as Operations Associate. The request below is a test message in my inbox. The agent read it, built the demo record and drafted one question to the grazier for the missing facts. The flight, car and room options are real search results from <span id="hero-rec"></span>. A person approves each booking with one press.</p>
 </section>
 
 <section aria-labelledby="h-in">
@@ -390,7 +390,23 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
         <li>Intercom: the contact and the follow-up messages.</li>
         <li>Flight search: live options in place of the recorded searches.</li>
       </ul>
-      <p style="margin-top:12px">The agent reads one shared inbox and one channel. It does not read personal mail or direct messages. In my test the calendar connection was live, on my own calendar. The page itself does not connect to a calendar. No other connection in this list was live. The agent read the test message from a file. The agent instructions are in the repository: <code>skill/demo-intake</code> and <code>skill/demo-trip-agent</code>. I ran the intake steps on the test message, and the record on this page is the result.</p>
+      <p style="margin-top:12px">The agent reads one shared inbox and one channel. It does not read personal mail or direct messages. In my test the inbox and the calendar were live, on my own accounts. The agent found the test message in the inbox, read it, and wrote the reply as a draft in the same thread. It sent nothing. The page itself does not connect to an inbox or a calendar. The agent instructions are in the repository: <code>skill/demo-intake</code> and <code>skill/demo-trip-agent</code>. I ran the intake steps on the test message, and the record on this page is the result.</p>
+    </div>
+  </details>
+  <details>
+    <summary><b>How this fits the Brumby stack</b></summary>
+    <div class="body">
+      <p>The Brumby demo form sends each request to HubSpot as a set of fields: the name, the email, the phone if the grazier gives it, where the stock is, the herd size, the main reason, how often the mob moves and the timing.</p>
+      <p>In the company version, a HubSpot workflow calls the agent when a form arrives. The agent takes the fields, so it does not interpret an email. The repository has the handler: <code>intake/hubspot_to_record.py</code>. I tested it with two sample submissions that use the field names of the form.</p>
+      <p>The form does not give the property address, the date or the guest count. That context is in other places: the reply from the grazier, the crew calendars and the demo channel. For this reason the agent still needs the inbox, the calendar and Slack.</p>
+      <h3>To run it for a company</h3>
+      <ul>
+        <li>Company accounts: a shared mailbox, a Slack app in one channel, a shared demo calendar and a HubSpot key. No personal login.</li>
+        <li>A small service that is always on. A form, a Slack button or a reply starts it.</li>
+        <li>One record for each demo, in HubSpot or Notion.</li>
+        <li>Approvals as buttons in Slack, a spend limit and a log of each action.</li>
+        <li>Three stages: the agent only posts its plan for 2 weeks, then it prepares and a person approves, then the low-risk steps run with no press.</li>
+      </ul>
     </div>
   </details>
   <details>
