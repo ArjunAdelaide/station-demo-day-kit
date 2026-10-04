@@ -14,15 +14,18 @@ window.KIT_DATA = {
       lon: 148.248,
       tz: "Australia/Brisbane",
       tropical: true,
+      airport: { code: "PPP", name: "Whitsunday Coast Airport" },
+      direct: true,
+      driveMin: 66,
       why: {
         text: "Sam Rogers grew up on a cattle farm at Bowen.",
         source: "Forbes Australia, 14 Jan 2026",
         url: "https://www.forbes.com.au/news/innovation/grazemate-raises-1-2-million-19-year-old-ceo-cattle-mustering/"
       },
       flight: {
-        headline: "Direct, about 2.5 h",
-        text: "Sydney to Whitsunday Coast Airport (PPP), direct with Jetstar. Flight sites give 2 h 18 min to 2 h 30 min.",
-        source: "Whitsunday Coast Airport (route); Skyscanner (time)",
+        headline: "Direct, 2 h 35 min",
+        text: "Sydney to Whitsunday Coast Airport (PPP), direct with Jetstar, 2 h 35 min.",
+        source: "Whitsunday Coast Airport (route); Google Flights schedule for 13 Oct 2026 (time)",
         url: "https://www.whitsundaycoastairport.com.au/Business/About-Us"
       },
       drive: {
@@ -46,6 +49,9 @@ window.KIT_DATA = {
       lon: 151.666,
       tz: "Australia/Sydney",
       tropical: false,
+      airport: { code: "ARM", name: "Armidale Regional Airport" },
+      direct: true,
+      driveMin: 30,
       why: {
         text: "In January 2026 Brumby had commitments in New South Wales. The Northern Tablelands mainly produces beef, sheep and wool. The choice of Armidale is my guess.",
         guess: true,
@@ -79,6 +85,9 @@ window.KIT_DATA = {
       lon: 140.513,
       tz: "Australia/Brisbane",
       tropical: true,
+      airport: { code: "ISA", name: "Mount Isa Airport" },
+      direct: false,
+      driveMin: 90,
       why: {
         text: "Brumby job ads say the aircraft fly over stations thousands of kilometres from Sydney. North West Queensland is my example of that country.",
         guess: true,
@@ -148,6 +157,36 @@ window.KIT_DATA = {
       url: "https://www.casa.gov.au/drones/drone-rules/drone-safety-rules"
     }
   ],
+
+  // One real run of the booking agent. Prices are for 2 adults, one way, in AUD.
+  // Recorded from Google Flights on 4 Oct 2026. Times are local to the departure or arrival airport.
+  sampleRun: {
+    recorded: "4 October 2026",
+    source: "Google Flights",
+    url: "https://www.google.com/travel/flights?hl=en-AU&gl=au&curr=AUD&q=Flights%20from%20SYD%20to%20PPP%20on%202026-10-13%20through%202026-10-14%20for%202%20adults",
+    region: "bowen",
+    demoDate: "2026-10-14",
+    travellers: 2,
+    out: [
+      { airline: "Jetstar", stops: "non-stop", dep: "11:30", arr: "13:05", price: 468 },
+      { airline: "Jetstar", stops: "1 stop in Brisbane", dep: "06:00", arr: "11:35", price: 706 },
+      { airline: "Virgin Australia", stops: "1 stop in Brisbane", dep: "10:00", arr: "15:00", price: 715 }
+    ],
+    back: [
+      { airline: "Jetstar", stops: "non-stop", dep: "13:45", arr: "17:10", price: 1773 },
+      { airline: "Virgin Australia", stops: "1 stop in Brisbane", dep: "15:40", arr: "20:40", price: 1378 },
+      { airline: "Virgin Australia", stops: "1 stop in Brisbane", dep: "15:40", arr: "22:20", price: 1150 },
+      { airline: "Jetstar", stops: "1 stop in Brisbane", dep: "12:15", arr: "20:35", price: 1257 }
+    ],
+    overnightSkipped: 848,
+    nextDayNonStop: 1773
+  },
+
+  battery: {
+    text: "A passenger can carry no more than two spare lithium batteries between 100 Wh and 160 Wh, in carry-on only, with airline approval. Larger batteries are outside this allowance.",
+    source: "CASA, spare lithium ion batteries above 100 Wh but not exceeding 160 Wh",
+    url: "https://www.casa.gov.au/packright/dangerous-good/batteries-spare-lithium-ion-rechargeable-above-100-wh-not-exceeding-160-wh"
+  },
 
   // The same options as the Brumby demo form.
   reasons: [

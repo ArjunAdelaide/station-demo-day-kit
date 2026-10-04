@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Station demo day kit</title>
-<meta name="description" content="Turn a demo request into a travel plan, a run sheet, a kit list and guest messages. Unofficial work sample by Arjun Kulshrestha.">
+<meta name="description" content="Turn a demo request into a trip plan, a booking agent brief, deadlines and a run sheet. Unofficial work sample by Arjun Kulshrestha.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400..700&family=TASA+Orbiter:wght@400..800&display=swap" rel="stylesheet">
@@ -52,6 +52,21 @@ button.text:hover{background:transparent;color:var(--ink)}
 .row .d{color:var(--mute);font-size:15px;margin-top:2px}
 .src{font-size:13px;color:var(--faint);white-space:nowrap}
 .src:hover{color:var(--accent)}
+.acts{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin-top:8px;font-size:14.5px}
+.acts a{font-weight:500}
+.bk{display:inline-flex;align-items:center;gap:7px;margin:0;font-size:14px;color:var(--mute);cursor:pointer}
+.bk input{width:16px;height:16px;padding:0;margin:0;border:1.5px solid rgba(36,30,23,.45);border-radius:3px;appearance:auto;-webkit-appearance:auto;accent-color:var(--accent)}
+.lead{color:var(--mute);margin:14px 0 4px;max-width:70ch;font-size:15.5px}
+.ok{color:var(--ink)}
+.no{color:var(--faint);text-decoration:line-through}
+.pick{font:500 11.5px/1 var(--text);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-left:8px}
+.late{font:500 11.5px/1 var(--text);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-left:8px}
+td.n{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums;padding-right:0}
+td.w{white-space:nowrap}
+.fold>summary b{font:500 12px/1.2 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.fold{border-bottom:1px solid var(--ink)}
+.fold[open]{border-bottom:0}
+.fold>summary{padding:14px 0 12px}
 table{width:100%;border-collapse:collapse}
 th,td{text-align:left;vertical-align:top;padding:12px 16px 12px 0;border-bottom:1px solid var(--line);font-size:15.5px}
 th{font:500 12px/1.2 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding-top:14px}
@@ -136,6 +151,21 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       <p class="err" id="e-town"></p>
     </div>
     <div>
+      <label for="f-date">Demo date</label>
+      <input id="f-date" type="date">
+      <p class="err" id="e-date"></p>
+    </div>
+    <div>
+      <label for="f-crew">Crew travelling</label>
+      <input id="f-crew" type="number" min="1" max="9" step="1" value="2" inputmode="numeric">
+      <p class="err" id="e-crew"></p>
+    </div>
+    <div>
+      <label for="f-drive">Airport to property (min)</label>
+      <input id="f-drive" type="number" min="0" step="5" value="66" inputmode="numeric">
+      <p class="err" id="e-drive"></p>
+    </div>
+    <div>
       <label for="f-head">How many head?</label>
       <input id="f-head" type="number" min="1" step="1" value="1800" inputmode="numeric">
       <p class="err" id="e-head"></p>
@@ -147,11 +177,6 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     <div>
       <label for="f-freq">How often does the mob move?</label>
       <select id="f-freq"></select>
-    </div>
-    <div>
-      <label for="f-date">Demo date</label>
-      <input id="f-date" type="date">
-      <p class="err" id="e-date"></p>
     </div>
     <div>
       <label for="f-guests">Guests</label>
@@ -168,7 +193,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     </div>
   </div>
   <div class="actions">
-    <button class="primary" id="b-build" type="button">Build run sheet &rarr;</button>
+    <button class="primary" id="b-build" type="button">Plan the trip &rarr;</button>
     <span class="status" id="status" role="status"></span>
   </div>
 </section>
@@ -180,50 +205,67 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   <p class="sub" id="plan-sub"></p>
 </section>
 
+<section aria-labelledby="h-trip">
+  <div class="head"><p class="eyebrow" id="h-trip">Trip</p></div>
+  <div id="trip"></div>
+  <div class="actions no-print" style="margin-top:18px">
+    <button type="button" class="primary" id="b-brief">Copy agent brief</button>
+    <button type="button" id="b-slack">Copy Slack request</button>
+  </div>
+</section>
+
+<section aria-labelledby="h-agent">
+  <div class="head"><p class="eyebrow" id="h-agent">Booking agent</p></div>
+  <p class="lead">The agent takes the brief, searches the flights and returns a shortlist. It applies the same time limits as the trip plan. It does not pay. A person approves and books.</p>
+  <div id="agent"></div>
+</section>
+
+<section aria-labelledby="h-dead">
+  <div class="head">
+    <p class="eyebrow" id="h-dead">Deadlines</p>
+    <button type="button" class="text no-print" id="b-ics">Add all to calendar</button>
+  </div>
+  <div id="deadlines"></div>
+</section>
+
 <section aria-labelledby="h-checks">
   <div class="head"><p class="eyebrow" id="h-checks">Checks</p></div>
   <div id="checks"></div>
 </section>
 
-<section aria-labelledby="h-run">
-  <div class="head">
-    <p class="eyebrow" id="h-run">Run sheet</p>
-    <button type="button" class="text no-print" id="b-edit">Edit schedule</button>
-  </div>
-  <div id="run-view">
-    <table id="run">
-      <thead><tr><th>Time</th><th>Station crew</th><th>Sydney operations centre</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <p class="note" id="talk"></p>
-    <p class="note">This schedule is a default template. The times follow sunrise. Edit the schedule to match your demo, and the kit keeps your version.</p>
-  </div>
-  <div id="run-edit" hidden></div>
-</section>
-
-<section>
-  <div class="two">
-    <div aria-labelledby="h-kit">
-      <div class="head"><p class="eyebrow" id="h-kit">Kit list</p></div>
-      <ul class="list" id="kit"></ul>
+<section aria-label="Demo day">
+  <details class="fold" id="fold-run">
+    <summary><b>Run sheet</b></summary>
+    <div class="body">
+      <div id="run-view">
+        <table id="run">
+          <thead><tr><th>Time</th><th>Station crew</th><th>Sydney operations centre</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="note" id="talk"></p>
+        <p class="note">This schedule is a default template. The times follow sunrise, and the trip plan follows the schedule. <button type="button" class="text no-print" id="b-edit">Edit schedule</button></p>
+      </div>
+      <div id="run-edit" hidden></div>
     </div>
-    <div aria-labelledby="h-q">
-      <div class="head"><p class="eyebrow" id="h-q">Ask the Chief Remote Pilot</p></div>
-      <ol class="list" id="questions"></ol>
-    </div>
-  </div>
-</section>
-
-<section aria-labelledby="h-msg">
-  <div class="head"><p class="eyebrow" id="h-msg">Guest messages</p></div>
-  <div id="msgs"></div>
+  </details>
+  <details class="fold">
+    <summary><b>Kit list</b></summary>
+    <div class="body"><ul class="list" id="kit"></ul></div>
+  </details>
+  <details class="fold">
+    <summary><b>Ask the Chief Remote Pilot</b></summary>
+    <div class="body"><ol class="list" id="questions"></ol></div>
+  </details>
+  <details class="fold">
+    <summary><b>Guest messages</b></summary>
+    <div class="body" id="msgs"></div>
+  </details>
 </section>
 
 <section class="no-print" aria-labelledby="h-exp">
   <div class="head"><p class="eyebrow" id="h-exp">Export</p></div>
   <div class="actions" style="margin-top:16px">
     <button type="button" id="b-notion">Copy for Notion</button>
-    <button type="button" id="b-ics">Calendar file</button>
     <button type="button" id="b-link">Copy link</button>
     <button type="button" id="b-print">Print</button>
   </div>
@@ -234,6 +276,23 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 <section aria-labelledby="h-notes">
   <div class="head"><p class="eyebrow" id="h-notes">Notes and sources</p></div>
   <details>
+    <summary><b>How this becomes an internal tool</b></summary>
+    <div class="body">
+      <ol style="margin:0;padding-left:20px">
+        <li>A demo request arrives from the website form.</li>
+        <li>The planner makes the trip plan, the deadlines and the agent brief. This page does this step now.</li>
+        <li>An agent takes the brief, searches flights, cars and rooms, and posts a shortlist in Slack. The repository has the agent instructions in <code>skill/SKILL.md</code>. I ran them once with Claude Code, and the sample run shows the result.</li>
+        <li>A person approves in Slack. Payment stays with a person.</li>
+        <li>The run sheet, the deadlines and the guest messages go to Notion, the calendar and Intercom.</li>
+      </ol>
+      <p style="margin-top:12px">Steps 1, 4 and 5 need access to Brumby systems. A flight search API, for example Duffel or Amadeus, replaces the browser search in step 3.</p>
+    </div>
+  </details>
+  <details>
+    <summary><b>The rules the planner uses</b></summary>
+    <div class="body"><ul id="rules"></ul><p style="margin-top:12px">The rules are in one object in the code. Each rule is a guess until Brumby sets it.</p></div>
+  </details>
+  <details>
     <summary><b>How the kit thinks Brumby operates</b></summary>
     <div class="body"><ul id="assume"></ul></div>
   </details>
@@ -241,11 +300,11 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     <summary><b>What I cut, what I guessed, what is next</b></summary>
     <div class="body">
       <h3>Cut</h3>
-      <p>Costs, catering detail and United States ranch demos. The role has domestic travel, so I kept to three Australian regions.</p>
+      <p>Live prices on the page, payment, and United States ranch demos. The role has domestic travel, so I kept to three Australian regions.</p>
       <h3>Guessed</h3>
-      <p>The demo format, the times and the kit list. I have not been to a Brumby demo day. For this reason the schedule is a template that you can edit.</p>
+      <p>The planner rules, the demo format and the freight lead time. I have not been to a Brumby demo day. For this reason the schedule is a template that you can edit.</p>
       <h3>Next</h3>
-      <p>Phone three graziers and ask what makes a demo day worth the drive. Then add a 2027 field day calendar.</p>
+      <p>Connect a flight search API so the shortlist is live for each request. Then send the shortlist to Slack for approval.</p>
       <h3>Built</h3>
       <p>With Claude Code, in one evening. Each fact has a link to its source.</p>
     </div>
@@ -275,10 +334,32 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   var $ = function (id) { return document.getElementById(id); };
   var state = null, editing = null;
   var TPL_KEY = "demoDayKit.template.v1";
+  var BOOK_KEY = "demoDayKit.booked.v1";
 
   var BOM = "https://media.bom.gov.au/social/blog/1989/the-wet-and-the-dry-seasons-in-the-tropics/";
   var FAQ = "https://brumby.com/#faq";
   var BLOG = "https://brumby.com/blog/posts/rotational-grazing.html";
+
+  // The planner rules. Each rule is a guess until the team sets it.
+  var RULES = {
+    daylight: 150,   // minutes of daylight needed at the property on the day before
+    pickup: 45,      // minutes at the airport for bags and the car
+    checkin: 75,     // minutes for the car return and check-in
+    latestBack: 990, // 16:30. After this time, fly the next morning
+    freightDays: 7,  // freight leaves this many days before the outbound flight
+    bookDays: 21,    // book travel and send invites this many days before the demo
+    confirmDays: 7   // confirm guest numbers this many days before the demo
+  };
+  var RULE_TEXT = [
+    "Fly out the day before the demo. If there is no direct flight, fly out two days before.",
+    "Land early enough to reach the property with " + (RULES.daylight / 60) + " hours of daylight for the site walk, the dock set-up and the rehearsal flight.",
+    "Allow " + RULES.pickup + " minutes at the airport for bags and the car.",
+    "Fly back after pack down, plus the drive, plus " + RULES.checkin + " minutes for the car return and check-in. If that time is after 16:30, fly the next morning.",
+    "One room for each person.",
+    "Freight leaves " + RULES.freightDays + " days before the outbound flight.",
+    "Book travel and send invites " + RULES.bookDays + " days before the demo. Confirm numbers " + RULES.confirmDays + " days before.",
+    "Guests arrive 60 minutes after sunrise. You can change this in the schedule."
+  ];
 
   var DEMOS = {
     muster: {
@@ -334,14 +415,12 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   };
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function store(key, fallback) { try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; } catch (e) { return fallback; } }
+  function keep(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
   function loadTpl() {
-    try {
-      var t = JSON.parse(localStorage.getItem(TPL_KEY));
-      if (t && Array.isArray(t.rows) && typeof t.arrive === "number") return t;
-    } catch (e) {}
-    return clone(DEFAULT_TPL);
+    var t = store(TPL_KEY, null);
+    return t && Array.isArray(t.rows) && typeof t.arrive === "number" ? t : clone(DEFAULT_TPL);
   }
-  function saveTpl(t) { try { localStorage.setItem(TPL_KEY, JSON.stringify(t)); } catch (e) {} }
   function clearTpl() { try { localStorage.removeItem(TPL_KEY); } catch (e) {} }
 
   function esc(s) {
@@ -359,31 +438,37 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     var h = Math.floor(min / 60), m = min % 60;
     return (h % 12 === 0 ? 12 : h % 12) + (m ? ":" + pad(m) : "") + (h < 12 ? " am" : " pm");
   }
+  function toMin(t) { var p = t.split(":"); return +p[0] * 60 + +p[1]; }
   function isoDate(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
   function parseISO(s) { var p = s.split("-"); return { y: +p[0], m: +p[1], d: +p[2] }; }
-  function longDate(s) {
+  function fmtDate(s, opts) {
     var p = parseISO(s);
-    return new Date(Date.UTC(p.y, p.m - 1, p.d, 12)).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+    opts.timeZone = "UTC";
+    return new Date(Date.UTC(p.y, p.m - 1, p.d, 12)).toLocaleDateString("en-AU", opts).replace(/,/g, "");
   }
+  function longDate(s) { return fmtDate(s, { weekday: "long", day: "numeric", month: "long", year: "numeric" }); }
+  function shortDate(s) { return fmtDate(s, { weekday: "short", day: "numeric", month: "short" }); }
   function shiftDate(s, days) {
     var p = parseISO(s);
     var t = new Date(Date.UTC(p.y, p.m - 1, p.d + days, 12));
     return t.getUTCFullYear() + "-" + pad(t.getUTCMonth() + 1) + "-" + pad(t.getUTCDate());
   }
+  function dayDiff(a, b) { return Math.round((Date.parse(b + "T12:00:00Z") - Date.parse(a + "T12:00:00Z")) / 86400000); }
+  function plural(n, word) { return n + " " + (word === "person" && n !== 1 ? "people" : word + (n === 1 ? "" : "s")); }
   function src(name, url) {
     return url ? ' <a class="src" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(name) + '">Source</a>' : "";
   }
 
-  // Sunrise in UTC minutes from 00:00 UTC of the given date (NOAA general solar position equations).
-  function sunriseUtcMinutes(y, m, d, lat, lon) {
+  // Sunrise and sunset in UTC minutes from 00:00 UTC of the given date (NOAA general solar position equations).
+  function sun(y, m, d, lat, lon) {
     var n = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 86400000) + 1;
     var g = 2 * Math.PI / 365 * (n - 1);
     var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
     var dec = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
     var la = lat * Math.PI / 180;
     var x = Math.cos(90.833 * Math.PI / 180) / (Math.cos(la) * Math.cos(dec)) - Math.tan(la) * Math.tan(dec);
-    if (x > 1 || x < -1) return 360;
-    return 720 - 4 * (lon + Math.acos(x) * 180 / Math.PI) - eq;
+    var ha = x > 1 || x < -1 ? 90 : Math.acos(x) * 180 / Math.PI;
+    return { rise: Math.round(720 - 4 * (lon + ha) - eq), set: Math.round(720 - 4 * (lon - ha) - eq) };
   }
   function tzOffsetMinutes(dateUtc, tz) {
     var parts = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(dateUtc);
@@ -391,11 +476,19 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     parts.forEach(function (p) { o[p.type] = p.value; });
     return Math.round((Date.UTC(+o.year, +o.month - 1, +o.day, +o.hour, +o.minute) - dateUtc.getTime()) / 60000);
   }
+  // Local sunrise and sunset, in minutes after local midnight, plus the UTC offset.
+  function localSun(dateIso, r) {
+    var p = parseISO(dateIso), u = sun(p.y, p.m, p.d, r.lat, r.lon);
+    var off = tzOffsetMinutes(new Date(Date.UTC(p.y, p.m - 1, p.d, 0, 0) + u.rise * 60000), r.tz);
+    function loc(x) { return (((x + off) % 1440) + 1440) % 1440; }
+    return { rise: loc(u.rise), set: loc(u.set), off: off };
+  }
 
   function fillSelect(el, items) {
     el.innerHTML = items.map(function (it) { return '<option value="' + esc(it.v) + '">' + esc(it.t) + "</option>"; }).join("");
   }
   function plain(list) { return list.map(function (x) { return { v: x, t: x }; }); }
+  function regionById(id) { return D.regions.filter(function (r) { return r.id === id; })[0]; }
 
   function init() {
     fillSelect($("f-region"), D.regions.map(function (r) { return { v: r.id, t: r.label }; }).concat([{ v: "other", t: "Another town" }]));
@@ -410,24 +503,41 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     readLink();
 
     $("checked").textContent = "Checked " + D.checked;
+    $("rules").innerHTML = RULE_TEXT.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("");
     $("assume").innerHTML = D.operating.map(function (o) { return "<li>" + esc(o.text) + src(o.source, o.url) + "</li>"; }).join("");
     var seen = {}, list = [];
     function add(name, url) { if (!seen[url]) { seen[url] = 1; list.push({ name: name, url: url }); } }
     D.regions.forEach(function (r) { ["why", "flight", "drive", "climate"].forEach(function (k) { add(r[k].source, r[k].url); }); });
     D.operating.forEach(function (o) { add(o.source, o.url); });
+    add(D.battery.source, D.battery.url);
+    add(D.sampleRun.source + ", sample run recorded " + D.sampleRun.recorded, D.sampleRun.url);
     $("sources").innerHTML = list.map(function (s) { return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></li>"; }).join("");
 
-    $("f-region").addEventListener("change", function () { $("other-wrap").hidden = this.value !== "other"; });
-    ["f-town", "f-head", "f-date", "f-guests"].forEach(function (id) {
+    $("f-region").addEventListener("change", function () {
+      $("other-wrap").hidden = this.value !== "other";
+      var r = regionById(this.value);
+      $("f-drive").value = r ? r.driveMin : 60;
+    });
+    ["f-town", "f-head", "f-date", "f-guests", "f-crew", "f-drive"].forEach(function (id) {
       $(id).addEventListener("input", function () { $("e-" + id.slice(2)).textContent = ""; });
     });
     $("b-build").addEventListener("click", build);
+    $("b-brief").addEventListener("click", function () { copy(brief(), "Brief copied. Give it to the agent."); });
+    $("b-slack").addEventListener("click", function () { copy(slack(), "Slack request copied."); });
     $("b-notion").addEventListener("click", function () { copy(markdown(), "Copied. Paste it into Notion."); });
     $("b-ics").addEventListener("click", downloadIcs);
     $("b-link").addEventListener("click", function () { copy(link(), "Link copied."); });
     $("b-print").addEventListener("click", function () { window.print(); });
     $("b-edit").addEventListener("click", openEditor);
     $("run-edit").addEventListener("click", editorClick);
+    $("trip").addEventListener("change", function (e) {
+      var b = e.target.closest("input[data-b]");
+      if (!b || !state) return;
+      var all = store(BOOK_KEY, {});
+      all[state.bookKey] = all[state.bookKey] || {};
+      all[state.bookKey][b.getAttribute("data-b")] = b.checked;
+      keep(BOOK_KEY, all);
+    });
     $("msgs").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-i]");
       if (b && state) copy(state.messages[+b.getAttribute("data-i")].body, "Message copied.");
@@ -449,6 +559,8 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     var id = $("f-region").value;
     q.set("where", id === "other" ? $("f-town").value.trim() : id);
     q.set("date", $("f-date").value);
+    q.set("crew", $("f-crew").value);
+    q.set("drive", $("f-drive").value);
     q.set("head", $("f-head").value);
     q.set("guests", $("f-guests").value);
     q.set("reason", String($("f-reason").selectedIndex));
@@ -459,11 +571,14 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     var q = new URLSearchParams(location.search);
     var where = q.get("where");
     if (where) {
-      var known = D.regions.some(function (r) { return r.id === where; });
+      var known = !!regionById(where);
       $("f-region").value = known ? where : "other";
-      if (!known) { $("f-town").value = where.slice(0, 60); $("other-wrap").hidden = false; }
+      if (known) $("f-drive").value = regionById(where).driveMin;
+      else { $("f-town").value = where.slice(0, 60); $("other-wrap").hidden = false; $("f-drive").value = 60; }
     }
     if (/^\d{4}-\d{2}-\d{2}$/.test(q.get("date") || "")) $("f-date").value = q.get("date");
+    if (+q.get("crew") >= 1 && +q.get("crew") <= 9) $("f-crew").value = Math.round(+q.get("crew"));
+    if (q.has("drive") && +q.get("drive") >= 0 && +q.get("drive") <= 900) $("f-drive").value = Math.round(+q.get("drive"));
     if (+q.get("head") >= 1) $("f-head").value = Math.round(+q.get("head"));
     if (+q.get("guests") >= 1) $("f-guests").value = Math.round(+q.get("guests"));
     var ri = +q.get("reason"), fi = +q.get("moves");
@@ -472,9 +587,11 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   }
 
   function validate() {
-    var ok = true;
+    var ok = true, crew = +$("f-crew").value, drive = $("f-drive").value;
     if (!(+$("f-head").value >= 1)) { $("e-head").textContent = "Enter the number of head."; ok = false; }
     if (!(+$("f-guests").value >= 1)) { $("e-guests").textContent = "Enter the number of guests."; ok = false; }
+    if (!(crew >= 1 && crew <= 9)) { $("e-crew").textContent = "Enter 1 to 9 people."; ok = false; }
+    if (drive === "" || !(+drive >= 0)) { $("e-drive").textContent = "Enter the drive time."; ok = false; }
     if (!$("f-date").value) { $("e-date").textContent = "Select a date."; ok = false; }
     if ($("f-region").value === "other" && !$("f-town").value.trim()) { $("e-town").textContent = "Enter a town."; ok = false; }
     return ok;
@@ -482,31 +599,33 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 
   function resolveRegion() {
     var id = $("f-region").value;
-    if (id !== "other") return Promise.resolve(D.regions.filter(function (r) { return r.id === id; })[0]);
+    if (id !== "other") return Promise.resolve(regionById(id));
     var url = "https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&countryCode=AU&name=" + encodeURIComponent($("f-town").value.trim());
     return fetch(url).then(function (r) { return r.json(); }).then(function (j) {
       var au = (j.results || []).filter(function (x) { return x.country_code === "AU"; });
       if (!au.length) throw new Error("notfound");
       var g = au[0];
       return {
-        id: "other", custom: true, town: g.name,
+        id: "other", custom: true, town: g.name, state: g.admin1 || "",
         label: g.name + (g.admin1 ? ", " + g.admin1 : ""),
         lat: g.latitude, lon: g.longitude, tz: g.timezone || "Australia/Sydney",
-        tropical: g.latitude > -23.44
+        tropical: g.latitude > -23.44, direct: false
       };
     });
   }
 
   function build() {
     if (!validate()) return;
-    $("status").textContent = "Building";
+    $("status").textContent = "Planning";
     resolveRegion().then(function (region) {
       state = plan({
         region: region,
+        date: $("f-date").value,
+        crew: Math.round(+$("f-crew").value),
+        drive: Math.round(+$("f-drive").value),
         head: Math.round(+$("f-head").value),
         reason: $("f-reason").value,
         freq: $("f-freq").value,
-        date: $("f-date").value,
         guests: Math.round(+$("f-guests").value),
         prop: $("f-prop").value.trim(),
         host: $("f-host").value.trim()
@@ -522,13 +641,11 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     });
   }
 
-  function plan(req) {
-    var p = parseISO(req.date), r = req.region, tpl = loadTpl();
-    var srUtc = Math.round(sunriseUtcMinutes(p.y, p.m, p.d, r.lat, r.lon));
-    var off = tzOffsetMinutes(new Date(Date.UTC(p.y, p.m - 1, p.d, 0, 0) + srUtc * 60000), r.tz);
-    var sunrise = (((srUtc + off) % 1440) + 1440) % 1440;
-    var G = Math.ceil((sunrise + tpl.arrive) / 15) * 15;
-    var demos = ORDER[req.reason].map(function (k) { return DEMOS[k]; });
+  // The demo-day schedule for one region and one date.
+  function schedule(r, date, reason) {
+    var tpl = loadTpl(), ls = localSun(date, r);
+    var G = Math.ceil((ls.rise + tpl.arrive) / 15) * 15;
+    var demos = ORDER[reason].map(function (k) { return DEMOS[k]; });
     function fill(t) {
       return String(t || "").replace(/\{town\}/g, r.town).replace(/\{demo1\}/g, demos[0].crew).replace(/\{demo2\}/g, demos[1].crew)
         .replace(/\{pilot1\}/g, demos[0].roc).replace(/\{pilot2\}/g, demos[1].roc);
@@ -542,16 +659,83 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     ["before", "day", "after"].forEach(function (band) {
       var set = band === "day" ? day : tpl.rows.filter(function (x) { return x.band === band; });
       if (!set.length) return;
-      rows.push({ band: band === "day" ? "Demo day, " + longDate(req.date) : BANDS[band] });
+      rows.push({ band: band === "day" ? "Demo day, " + longDate(date) : BANDS[band] });
       set.forEach(function (x) { rows.push({ t: band === "day" ? hm(G + x.o) : x.when, timed: band === "day", crew: fill(x.crew), roc: fill(x.roc) }); });
     });
     var first = day.length ? day[0].o : -90, last = day.length ? day[day.length - 1].o : 165;
-    var s = {
-      req: req, sunrise: sunrise, G: G, tzOffset: off, demos: demos, rows: rows,
+    return {
+      sunrise: ls.rise, tzOffset: ls.off, G: G, demos: demos, rows: rows,
       start: G + first, end: G + last + 30,
-      firstFlight: at("demo1", 30), close: at("close", 135), callBy: at("gonogo", -60),
-      weather: null
+      firstFlight: at("demo1", 30), close: at("close", 135), callBy: at("gonogo", -60)
     };
+  }
+
+  // The travel plan. It follows the schedule, the drive time and the daylight on the day before.
+  function trip(r, date, drive, crew, end) {
+    var direct = !!r.direct;
+    var walkDay = shiftDate(date, -1);
+    var outDay = direct ? walkDay : shiftDate(date, -2);
+    var landBy = Math.floor((localSun(walkDay, r).set - RULES.daylight - drive - RULES.pickup) / 5) * 5;
+    var backAfter = Math.ceil((end + drive + RULES.checkin) / 5) * 5;
+    var sameDay = direct && backAfter <= RULES.latestBack;
+    var backDay = sameDay ? date : shiftDate(date, 1);
+    return {
+      direct: direct, outDay: outDay, walkDay: walkDay, backDay: backDay, sameDay: sameDay,
+      landBy: landBy, backAfter: backAfter,
+      nights: dayDiff(outDay, backDay), rooms: crew,
+      freightBy: shiftDate(outDay, -RULES.freightDays)
+    };
+  }
+
+  function links(s) {
+    var r = s.req.region, t = s.trip, crew = s.req.crew;
+    var dest = r.airport ? r.airport.code : r.label;
+    function gf(from, to, day) {
+      return "https://www.google.com/travel/flights?hl=en-AU&gl=au&curr=AUD&q=" + encodeURIComponent("one way flights from " + from + " to " + to + " on " + day + " for " + plural(crew, "adult"));
+    }
+    var pickHour = t.direct ? Math.min(23, Math.max(6, Math.floor(t.landBy / 60))) : 14;
+    var dropHour = t.sameDay ? Math.min(23, Math.floor(t.backAfter / 60)) : 9;
+    var place = r.town + (r.state ? ", " + r.state : "") + ", Australia";
+    return {
+      out: gf("SYD", dest, t.outDay),
+      back: gf(dest, "SYD", t.backDay),
+      car: r.airport
+        ? "https://www.kayak.com.au/cars/" + r.airport.code + "/" + t.outDay + "-" + pad(pickHour) + "h/" + t.backDay + "-" + pad(dropHour) + "h"
+        : "https://www.google.com/search?q=" + encodeURIComponent("car hire near " + place),
+      rooms: "https://www.booking.com/searchresults.html?ss=" + encodeURIComponent(place) + "&checkin=" + t.outDay + "&checkout=" + shiftDate(t.outDay, Math.max(1, t.nights)) + "&group_adults=" + crew + "&no_rooms=" + crew
+    };
+  }
+
+  function deadlines(s) {
+    var d = s.req.date, t = s.trip, today = isoDate(new Date());
+    var list = [
+      { date: shiftDate(d, -RULES.bookDays), task: "Book the flights, the car and the rooms. Send the invite to the guests." },
+      { date: t.freightBy, task: "Freight leaves Sydney: dock, aircraft and batteries." },
+      { date: shiftDate(d, -RULES.confirmDays), task: "Confirm the guest numbers with the host. Order the catering." },
+      { date: t.outDay, task: "Crew flies out." + (t.direct ? " Site walk in the afternoon." : "") },
+      { date: t.walkDay, task: (t.direct ? "" : "Site walk with the host. ") + "Send the reminder to the guests." },
+      { date: d, task: "Demo day." + (t.sameDay ? " Crew flies home." : "") },
+      { date: shiftDate(d, 1), task: (t.sameDay ? "" : "Crew flies home. ") + "Send the follow-up to the guests." },
+      { date: shiftDate(d, 7), task: "Call each guest who asked about a pilot program." }
+    ];
+    var merged = [];
+    list.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }).forEach(function (x) {
+      var prev = merged[merged.length - 1];
+      if (prev && prev.date === x.date) prev.task += " " + x.task; else merged.push({ date: x.date, task: x.task });
+    });
+    merged.forEach(function (x) { x.late = x.date < today && d >= today; });
+    return merged;
+  }
+
+  function plan(req) {
+    var r = req.region;
+    var s = schedule(r, req.date, req.reason);
+    s.req = req;
+    s.weather = null;
+    s.trip = trip(r, req.date, req.drive, req.crew, s.end);
+    s.links = links(s);
+    s.deadlines = deadlines(s);
+    s.bookKey = (r.custom ? r.label : r.id) + "|" + req.date;
     var g = req.guests, screens = Math.max(1, Math.ceil(g / 10));
     s.kit = [
       "Dock, aircraft and spares. Get the list from engineering.",
@@ -616,7 +800,61 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     ];
   }
 
-  function season(s) {
+  function tripRows(s) {
+    var r = s.req.region, t = s.trip, req = s.req, air = r.airport ? r.airport.name + " (" + r.airport.code + ")" : "the nearest airport";
+    var outText = r.custom
+      ? "The airport for " + r.town + " is not in the fact file. The planner allows a full travel day."
+      : r.flight.text + (t.direct ? " Land by " + hm(t.landBy) + " to reach the property with " + (RULES.daylight / 60) + " hours of daylight." : " The site walk is on " + shortDate(t.walkDay) + ".");
+    return [
+      {
+        id: "out", k: "Flight out", v: shortDate(t.outDay) + (t.direct ? ", land by " + hm(t.landBy) : ", travel day"),
+        d: outText, name: r.flight && r.flight.source, url: r.flight && r.flight.url, go: "Search flights", href: s.links.out
+      },
+      {
+        id: "back", k: "Flight back", v: shortDate(t.backDay) + (t.sameDay ? ", depart after " + hm(t.backAfter) : ", first flight"),
+        d: t.sameDay
+          ? "Pack down ends at " + hm(s.end) + ". Add " + req.drive + " minutes for the drive and " + RULES.checkin + " minutes for the car return and check-in. If no flight fits, stay one more night."
+          : (t.direct ? "The earliest departure is " + hm(t.backAfter) + ", which is too late for the same day." : "There is no direct flight, so the same day is too tight.") + " Fly the next morning.",
+        go: "Search flights", href: s.links.back
+      },
+      {
+        id: "car", k: "Car", v: "1 vehicle, " + shortDate(t.outDay) + " to " + shortDate(t.backDay),
+        d: "Pick up and return at " + air + ". The drive to the property is " + req.drive + " minutes. Ask the host what vehicle the property road needs.",
+        name: r.drive && r.drive.source, url: r.drive && r.drive.url, go: "Search cars", href: s.links.car
+      },
+      {
+        id: "rooms", k: "Rooms", v: plural(t.rooms, "room") + ", " + plural(t.nights, "night"),
+        d: "In " + r.town + ". Check in " + shortDate(t.outDay) + ", check out " + shortDate(t.backDay) + ".",
+        go: "Search rooms", href: s.links.rooms
+      },
+      {
+        id: "freight", k: "Freight", v: "Send by " + shortDate(t.freightBy),
+        d: "The dock, the aircraft and its batteries go by road. " + D.battery.text + " The " + RULES.freightDays + "-day lead time is a guess. Confirm it with the carrier.",
+        name: D.battery.source, url: D.battery.url
+      }
+    ];
+  }
+
+  // The sample run uses the same rules as the trip plan, with its own region and date.
+  function agentRun() {
+    var a = D.sampleRun, r = regionById(a.region);
+    var sc = schedule(r, a.demoDate, "Less manual labour");
+    var t = trip(r, a.demoDate, r.driveMin, a.travellers, sc.end);
+    function mark(list, fits) {
+      var ok = list.filter(fits);
+      return { list: list.map(function (o) { return { o: o, fits: fits(o) }; }), ok: ok };
+    }
+    var out = mark(a.out, function (o) { return toMin(o.arr) <= t.landBy; });
+    var back = mark(a.back, function (o) { return toMin(o.dep) >= t.backAfter; });
+    function best(ok) {
+      var non = ok.filter(function (o) { return o.stops === "non-stop"; });
+      var cheap = ok.slice().sort(function (x, y) { return x.price - y.price; })[0];
+      return { fast: non[0] || cheap, cheap: cheap };
+    }
+    return { a: a, r: r, t: t, out: out, back: back, pickOut: best(out.ok), pickBack: best(back.ok) };
+  }
+
+  function seasonCheck(s) {
     var r = s.req.region, m = parseISO(s.req.date).m;
     if (r.tropical) {
       var wet = m >= 10 || m <= 4;
@@ -631,34 +869,59 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   }
 
   function checks(s) {
-    var r = s.req.region, out = [], se = season(s);
-    if (r.custom) {
-      var maps = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(r.label + ", Australia");
-      out.push({ k: "Flight", v: "Not in the fact file", d: "Add the nearest airport with a Sydney service before you use this plan." });
-      out.push({ k: "Drive", v: "Open the route", html: '<a href="' + maps + '" target="_blank" rel="noopener">Directions to ' + esc(r.label) + "</a>" });
-    } else {
-      out.push({ k: "Flight", v: r.flight.headline, d: r.flight.text, name: r.flight.source, url: r.flight.url });
-      out.push({ k: "Drive", v: r.drive.headline, d: r.drive.text, name: r.drive.source, url: r.drive.url });
+    var se = seasonCheck(s), over = s.req.head > D.herdLimit;
+    return [
+      { k: "Season", v: se.v, d: se.d, name: se.name, url: se.url },
+      { k: "First light", v: "Sunrise " + hm(s.sunrise), d: "Guests arrive at " + hm(s.G) + ". The crew starts at " + hm(s.start) + "." },
+      { k: "Weather", v: "Loading", d: "", id: "w" },
+      {
+        k: "Mob size", v: s.req.head.toLocaleString("en-AU") + " head",
+        d: over ? "This is above 2,000 head. Use one mob of 2,000 or less for the demo." : "One drone can handle a mob of this size.",
+        name: "Brumby FAQ", url: FAQ
+      }
+    ];
+  }
+
+  function rowHtml(c, booked) {
+    var acts = "";
+    if (c.href) acts += '<a href="' + esc(c.href) + '" target="_blank" rel="noopener">' + esc(c.go) + " &#8599;</a>";
+    if (c.id && c.id !== "w") acts += '<label class="bk"><input type="checkbox" data-b="' + c.id + '"' + (booked && booked[c.id] ? " checked" : "") + ">Booked</label>";
+    return '<div class="row"' + (c.id === "w" ? ' id="row-w"' : "") + '><div class="k">' + esc(c.k) + '</div><div><div class="v">' + esc(c.v) + '</div><div class="d">' + esc(c.d) + src(c.name, c.url) + "</div>" +
+      (acts ? '<div class="acts no-print">' + acts + "</div>" : "") + "</div></div>";
+  }
+
+  function renderAgent() {
+    var g = agentRun(), a = g.a;
+    function money(n) { return "$" + n.toLocaleString("en-AU"); }
+    function rows(label, set, picks) {
+      return set.list.map(function (x, i) {
+        var o = x.o, tagText = "";
+        if (o === picks.fast && o === picks.cheap) tagText = "Pick";
+        else if (o === picks.fast) tagText = "Fastest";
+        else if (o === picks.cheap) tagText = "Cheapest";
+        return "<tr><td class=\"t\">" + (i === 0 ? esc(label) : "") + "</td><td class=\"" + (x.fits ? "ok" : "no") + "\">" + esc(o.airline) + ", " + esc(o.stops) + "</td><td class=\"w " + (x.fits ? "ok" : "no") + "\">" + esc(o.dep) + " to " + esc(o.arr) + "</td><td class=\"n " + (x.fits ? "ok" : "no") + "\">" + money(o.price) + (tagText ? '<span class="pick">' + tagText + "</span>" : "") + "</td></tr>";
+      }).join("");
     }
-    out.push({ k: "Season", v: se.v, d: se.d, name: se.name, url: se.url });
-    out.push({ k: "First light", v: "Sunrise " + hm(s.sunrise), d: "Guests arrive at " + hm(s.G) + ". The crew starts at " + hm(s.start) + "." });
-    out.push({ k: "Weather", v: "Loading", d: "", id: "w" });
-    var over = s.req.head > D.herdLimit;
-    out.push({
-      k: "Mob size", v: s.req.head.toLocaleString("en-AU") + " head",
-      d: over ? "This is above 2,000 head. Use one mob of 2,000 or less for the demo." : "One drone can handle a mob of this size.",
-      name: "Brumby FAQ", url: FAQ
-    });
-    return out;
+    var fast = g.pickOut.fast.price + g.pickBack.fast.price, cheap = g.pickOut.cheap.price + g.pickBack.cheap.price;
+    $("agent").innerHTML =
+      '<table><thead><tr><th>Leg</th><th>Flight</th><th>Local times</th><th style="text-align:right">' + a.travellers + " adults</th></tr></thead><tbody>" +
+      rows("Out, " + shortDate(g.t.outDay), g.out, g.pickOut) + rows("Back, " + shortDate(g.t.backDay), g.back, g.pickBack) + "</tbody></table>" +
+      '<p class="note">Sample run for ' + esc(g.r.label) + ", demo on " + esc(longDate(a.demoDate)) + ". The limits were: land by " + hm(g.t.landBy) + ", depart after " + hm(g.t.backAfter) + ". A flight with a line through it does not fit a limit.</p>" +
+      '<p class="note">Result: the fastest pair costs ' + money(fast) + " and the cheapest pair that fits costs " + money(cheap) + ". The non-stop flight home costs the same on the next day (" + money(a.nextDayNonStop) + "), so one more night does not save money. The agent left out a " + money(a.overnightSkipped) + " option that stops overnight in Brisbane. The agent stops here and asks a person to choose." +
+      src(a.source + ", recorded " + a.recorded, a.url) + "</p>" +
+      '<p class="note">Recorded on ' + esc(a.recorded) + " from " + esc(a.source) + ". Prices are one way for " + a.travellers + " adults with taxes. Bags are extra. Prices change. For a new request, copy the agent brief.</p>";
   }
 
   function render(s) {
-    var r = s.req.region;
+    var r = s.req.region, booked = store(BOOK_KEY, {})[s.bookKey];
     $("h-plan").textContent = (s.req.prop ? s.req.prop + ", " : "") + r.label;
-    $("plan-sub").textContent = longDate(s.req.date) + ". " + s.req.guests + " guests. " + s.req.head.toLocaleString("en-AU") + " head.";
-    $("checks").innerHTML = checks(s).map(function (c) {
-      return '<div class="row"' + (c.id ? ' id="row-' + c.id + '"' : "") + '><div class="k">' + esc(c.k) + '</div><div><div class="v">' + esc(c.v) + '</div><div class="d">' + (c.html || esc(c.d)) + src(c.name, c.url) + "</div></div></div>";
+    $("plan-sub").textContent = "Demo on " + longDate(s.req.date) + ". " + plural(s.req.crew, "person") + " from Sydney, " + shortDate(s.trip.outDay) + " to " + shortDate(s.trip.backDay) + ".";
+    $("trip").innerHTML = tripRows(s).map(function (c) { return rowHtml(c, booked); }).join("");
+    renderAgent();
+    $("deadlines").innerHTML = s.deadlines.map(function (x) {
+      return '<div class="row"><div class="k">' + esc(shortDate(x.date)) + '</div><div><div class="d" style="color:var(--ink);margin:0">' + esc(x.task) + (x.late ? '<span class="late">Do now</span>' : "") + "</div></div></div>";
     }).join("");
+    $("checks").innerHTML = checks(s).map(function (c) { return rowHtml(c); }).join("");
     $("run").querySelector("tbody").innerHTML = s.rows.map(function (row) {
       if (row.band) return '<tr class="band"><td colspan="3">' + esc(row.band) + "</td></tr>";
       return '<tr><td class="t">' + esc(row.t) + "</td><td>" + esc(row.crew) + '</td><td class="roc">' + esc(row.roc) + "</td></tr>";
@@ -679,7 +942,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   }
 
   function loadWeather(s) {
-    var days = Math.round((Date.parse(s.req.date + "T12:00:00Z") - Date.parse(isoDate(new Date()) + "T12:00:00Z")) / 86400000);
+    var days = dayDiff(isoDate(new Date()), s.req.date);
     if (days < 0) { setWeather("Date is in the past", "Select a future date for a forecast."); return; }
     if (days > 15) { setWeather("Not open yet", "The forecast opens on " + longDate(shiftDate(s.req.date, -15)) + ". The limits come from the Chief Remote Pilot."); return; }
     var r = s.req.region;
@@ -704,15 +967,54 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     });
   }
 
+  // The brief is the hand-off to the booking agent.
+  function brief() {
+    var s = state, r = s.req.region, t = s.trip, c = s.req.crew, code = r.airport ? r.airport.code : r.label;
+    return [
+      "TRIP BRIEF",
+      "Demo: " + (s.req.prop ? s.req.prop + ", " : "") + r.label + ", " + longDate(s.req.date),
+      "Travellers: " + c + ", from Sydney (SYD)",
+      "",
+      "1. Flight out: SYD to " + code + " on " + shortDate(t.outDay) + "." + (t.direct ? " Land by " + hm(t.landBy) + " local time. Non-stop preferred." : " No direct flight. Any arrival on this day."),
+      "2. Flight back: " + code + " to SYD on " + shortDate(t.backDay) + "." + (t.sameDay ? " Depart after " + hm(t.backAfter) + " local time. If no flight fits, take the first flight on " + shortDate(shiftDate(t.backDay, 1)) + " and add one night." : " First flight of the day."),
+      "3. Car: 1 vehicle at " + (r.airport ? r.airport.name : "the airport") + ", " + shortDate(t.outDay) + " to " + shortDate(t.backDay) + ". The drive to the property is " + s.req.drive + " minutes.",
+      "4. Rooms: " + plural(t.rooms, "room") + " in " + r.town + " for " + plural(t.nights, "night") + ", check in " + shortDate(t.outDay) + ".",
+      "5. Freight: dock, aircraft and batteries leave Sydney by " + shortDate(t.freightBy) + ".",
+      "",
+      "Rules for the agent:",
+      "- Give 3 options for each flight, with times, stops and the price for " + plural(c, "adult") + ".",
+      "- Mark each option that does not fit a time limit.",
+      "- Name the fastest pair and the cheapest pair that fit.",
+      "- Do not pay. Stop before the payment page and post the shortlist for approval.",
+      "",
+      "Search links:",
+      "Out: " + s.links.out,
+      "Back: " + s.links.back,
+      "Car: " + s.links.car,
+      "Rooms: " + s.links.rooms
+    ].join("\n");
+  }
+
+  function slack() {
+    var s = state, r = s.req.region, t = s.trip;
+    return [
+      "*Trip request: " + r.town + " demo, " + shortDate(s.req.date) + "*",
+      plural(s.req.crew, "person") + " from Sydney. Out " + shortDate(t.outDay) + (t.direct ? " (land by " + hm(t.landBy) + ")" : "") + ", back " + shortDate(t.backDay) + (t.sameDay ? " (depart after " + hm(t.backAfter) + ")" : "") + ".",
+      "Needs: flights, 1 car, " + plural(t.rooms, "room") + " x " + plural(t.nights, "night") + ", freight by " + shortDate(t.freightBy) + ".",
+      "Plan: " + link(),
+      "Reply with a tick to approve the booking."
+    ].join("\n");
+  }
+
   // Schedule editor. It changes the template, and the template stays in this browser.
   function openEditor() {
     editing = loadTpl();
-    $("run-view").hidden = true; $("run-edit").hidden = false; $("b-edit").hidden = true;
+    $("run-view").hidden = true; $("run-edit").hidden = false;
     drawEditor();
   }
   function closeEditor() {
     editing = null;
-    $("run-view").hidden = false; $("run-edit").hidden = true; $("b-edit").hidden = false;
+    $("run-view").hidden = false; $("run-edit").hidden = true;
   }
   function drawEditor() {
     var h = '<div class="ed-arrive"><label for="ed-arrive">Guests arrive</label><input type="number" id="ed-arrive" step="15" min="0" value="' + esc(editing.arrive) + '"><span>minutes after sunrise.</span></div>' +
@@ -744,12 +1046,13 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       row.roc = el.querySelector(".ed-roc").value.trim();
     });
   }
+  function reopenRun() { $("fold-run").open = true; }
   function editorClick(e) {
     var b = e.target.closest("button[data-act]");
     if (!b || !editing) return;
     var act = b.getAttribute("data-act");
     if (act === "cancel") { closeEditor(); return; }
-    if (act === "reset") { clearTpl(); closeEditor(); build(); toast("Default schedule restored."); return; }
+    if (act === "reset") { clearTpl(); closeEditor(); build(); reopenRun(); toast("Default schedule restored."); return; }
     syncEditor();
     if (act === "del") { editing.rows.splice(+b.closest(".ed-row").getAttribute("data-i"), 1); drawEditor(); return; }
     if (act === "add") {
@@ -762,20 +1065,22 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       drawEditor();
       return;
     }
-    if (act === "save") { saveTpl(editing); closeEditor(); build(); toast("Schedule saved in this browser."); }
+    if (act === "save") { keep(TPL_KEY, editing); closeEditor(); build(); reopenRun(); toast("Schedule saved in this browser."); }
   }
 
   function markdown() {
-    var s = state, r = s.req.region, L = [], se = season(s);
-    L.push("# Demo day: " + (s.req.prop ? s.req.prop + ", " : "") + r.label + ", " + longDate(s.req.date));
+    var s = state, r = s.req.region, L = [], se = seasonCheck(s);
+    L.push("# Demo trip: " + (s.req.prop ? s.req.prop + ", " : "") + r.label + ", " + longDate(s.req.date));
     L.push("");
-    L.push("Request: " + s.req.head.toLocaleString("en-AU") + " head. Main reason: " + s.req.reason + ". Mob moves: " + s.req.freq + ". Guests: " + s.req.guests + ".");
+    L.push("Request: " + plural(s.req.crew, "person") + " from Sydney. " + s.req.head.toLocaleString("en-AU") + " head. Main reason: " + s.req.reason + ". Mob moves: " + s.req.freq + ". Guests: " + s.req.guests + ".");
+    L.push("");
+    L.push("## Trip");
+    tripRows(s).forEach(function (c) { L.push("- [ ] **" + c.k + ":** " + c.v + ". " + c.d + (c.href ? " [" + c.go + "](" + c.href + ")" : "")); });
+    L.push("");
+    L.push("## Deadlines");
+    s.deadlines.forEach(function (x) { L.push("- [ ] **" + shortDate(x.date) + ":** " + x.task); });
     L.push("");
     L.push("## Checks");
-    if (!r.custom) {
-      L.push("- Flight: " + r.flight.headline + ". " + r.flight.text + " (" + r.flight.source + ")");
-      L.push("- Drive: " + r.drive.headline + ". " + r.drive.text + " (" + r.drive.source + ")");
-    }
     L.push("- Season: " + se.v + ". " + se.d);
     L.push("- First light: sunrise " + hm(s.sunrise) + ". Guests arrive at " + hm(s.G) + ".");
     if (s.weather) L.push("- Weather, " + pad(s.weather.from) + ":00 to " + pad(s.weather.to) + ":00: wind " + s.weather.wind + " km/h, gusts " + s.weather.gust + " km/h" + (s.weather.rain != null ? ", rain chance up to " + s.weather.rain + "%" : "") + ", " + s.weather.tmin + " to " + s.weather.tmax + " °C. (Open-Meteo)");
@@ -805,25 +1110,30 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     return t.getUTCFullYear() + pad(t.getUTCMonth() + 1) + pad(t.getUTCDate()) + "T" + pad(t.getUTCHours()) + pad(t.getUTCMinutes()) + "00Z";
   }
   function icsText(t) { return String(t).replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\\;"); }
-  function downloadIcs() {
+  function icsFile() {
     var s = state, r = s.req.region, now = new Date();
+    var stamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + "T" + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + "00Z";
     var desc = s.rows.filter(function (x) { return x.timed; }).map(function (x) {
       return icsText(x.t + " " + x.crew + (x.roc ? " Sydney: " + x.roc : ""));
     }).join("\\n");
-    var ics = [
-      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Station demo day kit//EN", "BEGIN:VEVENT",
-      "UID:demo-" + s.req.date + "-" + r.id + "@demo-day-kit",
-      "DTSTAMP:" + now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + "T" + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + "00Z",
-      "DTSTART:" + icsStamp(s.req.date, s.start, s.tzOffset),
-      "DTEND:" + icsStamp(s.req.date, s.end, s.tzOffset),
+    var L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Station demo day kit//EN",
+      "BEGIN:VEVENT", "UID:demo-" + s.req.date + "-" + r.id + "@demo-day-kit", "DTSTAMP:" + stamp,
+      "DTSTART:" + icsStamp(s.req.date, s.start, s.tzOffset), "DTEND:" + icsStamp(s.req.date, s.end, s.tzOffset),
       "SUMMARY:" + icsText("Demo day: " + r.town + (s.req.prop ? " (" + s.req.prop + ")" : "")),
-      "LOCATION:" + icsText(r.label),
-      "DESCRIPTION:" + desc,
-      "END:VEVENT", "END:VCALENDAR"
-    ].join("\r\n");
+      "LOCATION:" + icsText(r.label), "DESCRIPTION:" + desc, "END:VEVENT"];
+    s.deadlines.forEach(function (x, i) {
+      if (x.date === s.req.date) return;
+      L.push("BEGIN:VEVENT", "UID:deadline-" + i + "-" + s.req.date + "-" + r.id + "@demo-day-kit", "DTSTAMP:" + stamp,
+        "DTSTART;VALUE=DATE:" + x.date.replace(/-/g, ""), "DTEND;VALUE=DATE:" + shiftDate(x.date, 1).replace(/-/g, ""),
+        "SUMMARY:" + icsText(r.town + " demo: " + x.task), "END:VEVENT");
+    });
+    L.push("END:VCALENDAR");
+    return L.join("\r\n");
+  }
+  function downloadIcs() {
     var a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
-    a.download = "demo-day-" + r.id + "-" + s.req.date + ".ics";
+    a.href = URL.createObjectURL(new Blob([icsFile()], { type: "text/calendar" }));
+    a.download = "demo-trip-" + state.req.region.id + "-" + state.req.date + ".ics";
     document.body.appendChild(a); a.click(); a.remove();
     toast("Calendar file saved.");
   }
@@ -845,7 +1155,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove("on"); }, 2200);
   }
 
-  window.__kit = { state: function () { return state; }, markdown: markdown, link: link };
+  window.__kit = { state: function () { return state; }, markdown: markdown, link: link, brief: brief, slack: slack, ics: icsFile, agent: agentRun };
   init();
 })();
 </script>

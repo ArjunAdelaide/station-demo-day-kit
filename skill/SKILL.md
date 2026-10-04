@@ -1,39 +1,43 @@
 ---
-name: demo-day
-description: Build a station demo day plan (checks, two-column run sheet, kit list, guest messages) from one sentence, such as "demo near Bowen on 18 May for 25 guests, 1,800 head". Use for demo days, field demos and customer events on a cattle property.
+name: demo-trip-agent
+description: Take a trip brief from the station demo day kit, search flights, cars and rooms, and return a shortlist for a person to approve. Use it for demo days, field days and customer visits to a cattle property. The agent does not pay.
 ---
 
-Build a demo day plan for: $ARGUMENTS
+Book the trip in this brief: $ARGUMENTS
 
-## Inputs
+The brief comes from the "Copy agent brief" button on the planner page. It has the route, the dates, the time limits, the number of travellers and the search links.
 
-Read these from the request. Ask one question only if the town or the date is missing.
+## Steps
 
-- Town or region
-- Date
-- Number of guests (default 20)
-- Head count (default: not given)
-- Main reason and how often the mob moves, if given
-
-## Facts
-
-1. Read `regions.js` in this folder. Use its values for the flight, the drive and the climate. Keep the source name with each value.
-2. If the town is not in `regions.js`, find the nearest airport with a Sydney service and the drive time. Give a source link for each. If you cannot find a source, write "not found". Do not estimate.
-3. Get the forecast for the date from Open-Meteo if the date is 15 days away or less. Report wind, gusts, rain chance and temperature for the demo hours.
-4. Use the `operating` list in `regions.js` for how Brumby flies: a dock on the property, a remote pilot in Sydney, early flights.
+1. Read the brief. Write down the two time limits: "land by" for the flight out and "depart after" for the flight back.
+2. Open the "Out" search link. Read the results. Record 3 options: airline, stops, departure time, arrival time and the price for all travellers.
+3. Open the "Back" search link. Record 3 options in the same way.
+4. Mark each option that does not fit its time limit. All times are local to the airport.
+5. If no flight back fits, search the next day and add one night to the rooms.
+6. Open the "Car" link and the "Rooms" link. Record 2 options for each, with the total price.
+7. Name the fastest pair of flights and the cheapest pair that fit. Give the price difference and the arrival time difference.
+8. Post the shortlist. Stop.
 
 ## Output
 
-Write the plan in this order. Use short sentences and plain words.
-
-1. **Checks**: flight, drive, season, first light, weather, mob size. If the herd is above 2,000 head, tell the crew to use one mob of 2,000 or less.
-2. **Run sheet**: a table with three columns: time, station crew, Sydney operations centre. Start the crew 90 minutes before the guests arrive. Guests arrive about one hour after sunrise.
-3. **Kit list**: scale chairs, water and screens to the guest count.
-4. **Questions for the Chief Remote Pilot**: operating area, guest distance, weather limits, other aircraft, lost link, stop call. Ask them. Do not answer them.
-5. **Messages**: invite, reminder, follow-up. Warm and short. Use the words a grazier uses: mob, paddock, smoko.
+```
+TRIP SHORTLIST: <town>, demo on <date>
+Out, <day>:  <airline>, <stops>, <dep> to <arr>, $<price>  [fits / does not fit]
+Back, <day>: <airline>, <stops>, <dep> to <arr>, $<price>  [fits / does not fit]
+Fastest pair: $<total>. Cheapest pair that fits: $<total>.
+Car: <supplier>, <vehicle>, $<total>
+Rooms: <place>, <rooms> x <nights>, $<total>
+Checked: <date and time>, <source>
+Decision needed: <the one choice a person must make>
+```
 
 ## Rules
 
-- Mark each assumption with "(guess)". The demo format and the times are guesses unless the user gives them.
-- Do not state a flight rule. Flight rules come from the operator's approved procedures and from CASA.
-- Do not invent a number. Each number has a source or a "(guess)" mark.
+- Do not pay. Do not enter card details. Do not accept terms. Stop before the payment page.
+- Do not sign in to an account and do not create one.
+- Quote each price and time as the page shows it. If a page does not load, write "not found". Do not estimate.
+- Give the date and the source of each search. Prices change.
+- If the brief has no airport code, find the nearest airport with a Sydney connection and give a source link for it.
+- Leave out a flight that has an overnight connection. Say that you left it out, and give its price.
+- Say what the price includes. Bag fees are often extra.
+- Lithium batteries: a passenger can carry no more than two spare batteries between 100 Wh and 160 Wh, in carry-on, with airline approval (CASA). Larger batteries are outside this allowance. Do not plan to fly the dock or the aircraft batteries as baggage.
