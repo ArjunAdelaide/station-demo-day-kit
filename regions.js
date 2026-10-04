@@ -2,7 +2,7 @@
 // Each value has a source. A value with guess: true is Arjun's assumption, not a Brumby fact.
 
 window.KIT_DATA = {
-  checked: "4 October 2026",
+  checked: "5 October 2026",
 
   regions: [
     {
@@ -24,9 +24,9 @@ window.KIT_DATA = {
         url: "https://www.forbes.com.au/news/innovation/grazemate-raises-1-2-million-19-year-old-ceo-cattle-mustering/"
       },
       flight: {
-        headline: "Direct, 2 h 35 min",
-        text: "Sydney to Whitsunday Coast Airport (PPP), direct with Jetstar, 2 h 35 min.",
-        source: "Whitsunday Coast Airport (route); Google Flights schedule for 13 Oct 2026 (time)",
+        headline: "Direct, about 2.5 h",
+        text: "Sydney to Whitsunday Coast Airport (PPP), direct with Jetstar, about 2 h 30 min.",
+        source: "Whitsunday Coast Airport (route); Google Flights schedules for 13 and 27 Oct 2026 (time)",
         url: "https://www.whitsundaycoastairport.com.au/Business/About-Us"
       },
       drive: {
@@ -161,28 +161,56 @@ window.KIT_DATA = {
     }
   ],
 
-  // One real run of the booking agent. Prices are for 2 adults, one way, in AUD.
-  // Recorded from Google Flights on 4 Oct 2026. Times are local to the departure or arrival airport.
+  // One real run of the booking agent for a sample request. Recorded on 5 Oct 2026.
+  // The request is a sample. The flight, car and room options are real search results.
+  // Flight prices are one way for 2 adults with taxes, in AUD. Times are local to the airport.
   sampleRun: {
-    recorded: "4 October 2026",
-    source: "Google Flights",
-    url: "https://www.google.com/travel/flights?hl=en-AU&gl=au&curr=AUD&q=Flights%20from%20SYD%20to%20PPP%20on%202026-10-13%20through%202026-10-14%20for%202%20adults",
+    recorded: "5 October 2026",
     region: "bowen",
-    demoDate: "2026-10-14",
+    demoDate: "2026-10-28",
     travellers: 2,
-    out: [
-      { airline: "Jetstar", stops: "non-stop", dep: "11:30", arr: "13:05", price: 468 },
-      { airline: "Jetstar", stops: "1 stop in Brisbane", dep: "06:00", arr: "11:35", price: 706 },
-      { airline: "Virgin Australia", stops: "1 stop in Brisbane", dep: "10:00", arr: "15:00", price: 715 }
-    ],
-    back: [
-      { airline: "Jetstar", stops: "non-stop", dep: "13:45", arr: "17:10", price: 1773 },
-      { airline: "Virgin Australia", stops: "1 stop in Brisbane", dep: "15:40", arr: "20:40", price: 1378 },
-      { airline: "Virgin Australia", stops: "1 stop in Brisbane", dep: "15:40", arr: "22:20", price: 1150 },
-      { airline: "Jetstar", stops: "1 stop in Brisbane", dep: "12:15", arr: "20:35", price: 1257 }
-    ],
-    overnightSkipped: 848,
-    nextDayNonStop: 1773
+    request: {
+      received: "Mon 5 Oct 2026, 09:12", channel: "Website demo form",
+      name: "Pat", prop: "Example Station", head: 1800, guests: 20,
+      reason: "Less manual labour", freq: "Every 1 to 2 weeks", timing: "In the next few weeks"
+    },
+    flights: {
+      source: "Google Flights",
+      url: "https://www.google.com/travel/flights?hl=en-AU&gl=au&curr=AUD&q=Flights%20from%20SYD%20to%20PPP%20on%202026-10-27%20through%202026-10-28%20for%202%20adults",
+      out: [
+        { airline: "Jetstar", stops: "non-stop", dep: "11:45", arr: "13:15", price: 459 },
+        { airline: "Virgin Australia", stops: "1 stop", dep: "11:00", arr: "14:55", price: 436 },
+        { airline: "Jetstar", stops: "1 stop", dep: "06:20", arr: "12:25", price: 508 }
+      ],
+      back: [
+        { airline: "Virgin Australia", stops: "1 stop", dep: "15:35", arr: "20:40", price: 377 },
+        { airline: "Jetstar", stops: "1 stop", dep: "13:05", arr: "21:15", price: 686 },
+        { airline: "Jetstar", stops: "non-stop", dep: "13:55", arr: "17:25", price: 753 },
+        { airline: "Jetstar", stops: "1 stop", dep: "09:10", arr: "16:20", price: 823 }
+      ]
+    },
+    cars: {
+      source: "Kayak",
+      url: "https://www.kayak.com.au/cars/PPP/2026-10-27-13h/2026-10-28-12h",
+      note: "Listed price for Tue 27 Oct 13:00 to Wed 28 Oct 12:00 at the airport terminal.",
+      options: [
+        { name: "Mazda CX-3 or similar", cls: "SUV", suv: true, price: 102 },
+        { name: "Mazda CX-3 or similar", cls: "compact SUV", suv: true, price: 105 },
+        { name: "Hyundai Kona or similar", cls: "intermediate SUV", suv: true, price: 108 },
+        { name: "Toyota Corolla or similar", cls: "compact car", suv: false, price: 71 }
+      ]
+    },
+    rooms: {
+      source: "Booking.com",
+      url: "https://www.booking.com/searchresults.html?ss=Bowen%2C+Queensland%2C+Australia&checkin=2026-10-27&checkout=2026-10-28&group_adults=1&no_rooms=1",
+      note: "Price for 1 room, 1 night, 1 adult, with taxes and charges.",
+      options: [
+        { name: "Harbour Lights Tourist Park", room: "queen room", price: 111, score: 8.0, km: 0.7, freeCancel: true, url: "https://www.booking.com/hotel/au/harbour-lights-tourist-park-bowen14.en-gb.html" },
+        { name: "Original North Australian", room: "queen room", price: 135, score: 7.9, km: 0.25, freeCancel: true, url: "https://www.booking.com/hotel/au/sails-on-main.en-gb.html" },
+        { name: "Bowen Holiday Park", room: "studio", price: 142, score: 8.2, km: 4.0, freeCancel: true, url: "https://www.booking.com/hotel/au/bowen-holiday-park-bowen.en-gb.html" },
+        { name: "Port Denison Motor Inn", room: "queen room", price: 154, score: 8.8, km: 0.7, freeCancel: true, url: "https://www.booking.com/hotel/au/port-denison-motor-inn-bowen.en-gb.html" }
+      ]
+    }
   },
 
   battery: {

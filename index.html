@@ -59,6 +59,23 @@ button.text:hover{background:transparent;color:var(--ink)}
 .lead{color:var(--mute);margin:14px 0 4px;max-width:70ch;font-size:15.5px}
 a.btn{display:inline-block;font:500 15px/1 var(--text);border-radius:4px;padding:12px 18px;border:1.5px solid var(--accent);background:var(--accent);color:var(--on-accent);text-decoration:none}
 a.btn:hover{background:#873613}
+a.btn.done{background:transparent;color:var(--accent)}
+.card{background:#fff;border:1px solid var(--line);border-radius:4px;padding:18px 20px}
+.meta{font:500 12px/1.4 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
+.who{font:600 20px/1.25 var(--display);margin:0 0 4px}
+.steps{list-style:none;margin:6px 0 0;padding:0}
+.steps li{padding:9px 0 9px 28px;border-bottom:1px solid var(--line);position:relative;font-size:15.5px;opacity:.28;transition:opacity .25s}
+.steps li::before{content:"";position:absolute;left:2px;top:15px;width:9px;height:9px;border:1.5px solid var(--faint);border-radius:50%}
+.steps li.on{opacity:1}
+.steps li.on::before{content:"\2713";border:0;width:auto;height:auto;top:9px;left:0;color:var(--accent);font-weight:700}
+.ap{display:grid;grid-template-columns:132px minmax(0,1fr) auto auto;gap:6px 20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.ap .k{font:500 12px/1.9 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);align-self:start}
+.ap .v{font:600 19px/1.3 var(--display)}
+.ap .d{color:var(--mute);font-size:15px;margin-top:3px}
+.ap .p{font:600 19px/1.3 var(--display);white-space:nowrap;text-align:right}
+.ap .p small{display:block;font:400 13px/1.3 var(--text);color:var(--mute)}
+.total{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;font:600 19px/1.3 var(--display)}
+.total span{font:400 14px/1.4 var(--text);color:var(--mute)}
 .ok{color:var(--ink)}
 .no{color:var(--faint);text-decoration:line-through}
 .pick{font:500 11.5px/1 var(--text);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-left:8px}
@@ -119,6 +136,10 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   td.t,td.roc{width:auto}
   td.roc:not(:empty)::before{content:"Sydney: ";color:var(--faint)}
   .ed-row{grid-template-columns:minmax(0,1fr)}
+  .ap{grid-template-columns:minmax(0,1fr) auto}
+  .ap .k{grid-column:1 / -1}
+  .ap .main{grid-column:1 / -1}
+  .ap .p{text-align:left}
 }
 @media (max-width:420px){.fields{grid-template-columns:minmax(0,1fr)}}
 @media print{
@@ -139,6 +160,50 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 </div></div>
 
 <main>
+
+<section aria-labelledby="h-hero">
+  <p class="eyebrow">Prototype</p>
+  <h1 id="h-hero">A demo request comes in. The trip plans itself.</h1>
+  <p class="lead">This is one automation I would build as Operations Associate. The request below is a sample. The flight, car and room options are real search results from <span id="hero-rec"></span>. The agent picks one of each. A person approves each booking with one press.</p>
+</section>
+
+<section aria-labelledby="h-in">
+  <div class="head"><p class="eyebrow" id="h-in">1. The request arrives</p></div>
+  <div class="card" style="margin-top:16px">
+    <p class="meta" id="req-meta"></p>
+    <p class="who" id="req-who"></p>
+    <p class="d" id="req-d" style="color:var(--mute);margin:0"></p>
+    <div class="actions no-print" style="margin-top:16px">
+      <button type="button" class="primary" id="b-accept">Accept and plan &rarr;</button>
+      <span class="status" id="accept-note">No form to fill in. The agent reads the request.</span>
+    </div>
+  </div>
+</section>
+
+<div id="hero-out" hidden>
+
+<section aria-labelledby="h-work">
+  <div class="head"><p class="eyebrow" id="h-work">2. The agent plans the trip</p></div>
+  <ul class="steps" id="steps"></ul>
+</section>
+
+<section aria-labelledby="h-ap" id="sec-ap" hidden>
+  <div class="head"><p class="eyebrow" id="h-ap">3. You approve</p></div>
+  <div id="approvals"></div>
+  <div class="total"><div>Trip total <span id="total-note"></span></div><div id="total"></div></div>
+  <p class="note">Each button opens the booking page with the trip filled in. A person pays. In the full tool, one press books with the supplier and posts the confirmation in Slack.</p>
+</section>
+
+<section aria-labelledby="h-done" id="sec-done" hidden>
+  <div class="head"><p class="eyebrow" id="h-done">4. Already done, with no press</p></div>
+  <div id="done"></div>
+</section>
+
+</div>
+
+<details class="fold" id="manual" style="margin-top:44px">
+<summary><b>Plan a different request by hand</b></summary>
+<div>
 
 <section class="no-print" aria-labelledby="h-req">
   <p class="eyebrow" id="h-req">Demo request</p>
@@ -191,7 +256,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     </div>
     <div>
       <label for="f-prop">Property (optional)</label>
-      <input id="f-prop" type="text" placeholder="Glen Alpine" autocomplete="off">
+      <input id="f-prop" type="text" placeholder="Example Station" autocomplete="off">
     </div>
     <div>
       <label for="f-host">Host (optional)</label>
@@ -286,19 +351,36 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 
 </div>
 
+</div>
+</details>
+
 <section aria-labelledby="h-notes">
   <div class="head"><p class="eyebrow" id="h-notes">Notes and sources</p></div>
   <details>
     <summary><b>How this becomes an internal tool</b></summary>
     <div class="body">
       <ol style="margin:0;padding-left:20px">
-        <li>A demo request arrives from the website form.</li>
-        <li>The planner makes the trip plan, the deadlines and the agent brief. This page does this step now.</li>
-        <li>An agent takes the brief, searches flights, cars and rooms, and posts a shortlist in Slack. The repository has the agent instructions in <code>skill/SKILL.md</code>. I ran them once with Claude Code, and the sample run shows the result.</li>
-        <li>A person approves in Slack. Payment stays with a person.</li>
-        <li>The run sheet, the deadlines and the guest messages go to Notion, the calendar and Intercom.</li>
+        <li>A demo request arrives from the website form. The agent reads it in Slack or in email. No person fills in a form.</li>
+        <li>A person accepts the request with one press.</li>
+        <li>The agent picks the date, finds the airport, sets the time limits, searches flights, cars and rooms, and applies the travel policy. This page does the planning now. I ran the searches once with Claude Code and recorded the results.</li>
+        <li>The agent posts one option for each booking. A person approves each one with one press. Payment stays with a person or with a company card that has a limit.</li>
+        <li>The itinerary, the deadlines, the run sheet and the guest messages go to Slack, the calendar, Notion and Intercom.</li>
       </ol>
-      <p style="margin-top:12px">Steps 1, 4 and 5 need access to Brumby systems. A flight search API, for example Duffel or Amadeus, replaces the browser search in step 3.</p>
+      <p style="margin-top:12px">Steps 1, 4 and 5 need access to Brumby systems. Step 3 needs a flight search service in place of the recorded searches.</p>
+    </div>
+  </details>
+  <details>
+    <summary><b>Other work I would automate</b></summary>
+    <div class="body">
+      <ul>
+        <li>Go or no-go: at 15:00 on the day before, the agent posts the forecast against the flight limits and drafts the guest message for each result.</li>
+        <li>Guest numbers: replies to the invite update the head count, the catering order and the kit list.</li>
+        <li>After the demo: one follow-up draft for each guest in Intercom, photos to the asset library, and the receipts to the accounts system.</li>
+        <li>Onboarding: a new hire starts a checklist for accounts, equipment and a first-week calendar.</li>
+        <li>Support: tags for each Intercom conversation and a weekly list of the top five problems.</li>
+        <li>Field days: one calendar of exhibitor deadlines, and the same trip plan for each event.</li>
+        <li>Weekly digest: one Slack message with what is booked and what waits for a person.</li>
+      </ul>
     </div>
   </details>
   <details>
@@ -363,6 +445,10 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     perVehicle: 4,   // people for each hire vehicle
     freightKmPerDay: 700, // road freight distance for each day
     freightHandling: 2,   // days for pickup and delivery
+    nonStopPremium: 100,  // dollars for each person that a non-stop flight can cost above the cheapest flight
+    latestHome: 1380,     // 23:00. The flight back must land before this time
+    roomScore: 8,         // lowest review score for a room
+    noticeDays: 21,       // days between the request and the demo
     bookDays: 21,    // book travel and send invites this many days before the demo
     confirmDays: 7   // confirm guest numbers this many days before the demo
   };
@@ -373,6 +459,9 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     "Fly back after pack down, plus the drive, plus " + RULES.checkin + " minutes for the car return and check-in. If that time is after 16:30, fly the next morning.",
     "One room for each person. One vehicle for each " + RULES.perVehicle + " people.",
     "Road freight covers " + RULES.freightKmPerDay + " km a day, plus " + RULES.freightHandling + " days for pickup and delivery. Freight does not leave on a weekend.",
+    "Date: the first Wednesday with " + RULES.noticeDays + " days of notice.",
+    "Flights: take the non-stop flight if it costs no more than $" + RULES.nonStopPremium + " more for each person than the cheapest flight that fits. If not, take the cheapest flight that fits and lands before 23:00.",
+    "Car: the cheapest SUV at the airport terminal. Rooms: free cancellation, a review score of " + RULES.roomScore + " or more, then the lowest price.",
     "For a town that is not in the fact file, the planner takes the nearest airport in the open airport data and gets the drive from a road router.",
     "Book travel and send invites " + RULES.bookDays + " days before the demo. Confirm numbers " + RULES.confirmDays + " days before.",
     "Guests arrive 60 minutes after sunrise. You can change this in the schedule."
@@ -538,7 +627,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     // Default: the first Wednesday that is 6 or more days away, so the live forecast is open.
     var d = new Date(); d.setDate(d.getDate() + 6);
     while (d.getDay() !== 3) d.setDate(d.getDate() + 1);
-    $("f-date").value = isoDate(d);
+    $("f-date").value = D.sampleRun.demoDate > isoDate(d) ? D.sampleRun.demoDate : isoDate(d);
     readLink();
 
     $("checked").textContent = "Checked " + D.checked;
@@ -551,7 +640,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     add(D.battery.source, D.battery.url);
     add(D.airportsSource.source, D.airportsSource.url);
     add("OpenStreetMap road router (drive and freight distance)", "https://project-osrm.org/");
-    add(D.sampleRun.source + ", sample run recorded " + D.sampleRun.recorded, D.sampleRun.url);
+    ["flights", "cars", "rooms"].forEach(function (k) { add(D.sampleRun[k].source + ", search recorded " + D.sampleRun.recorded, D.sampleRun[k].url); });
     $("sources").innerHTML = list.map(function (s) { return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></li>"; }).join("");
 
     $("f-region").addEventListener("change", function () {
@@ -582,7 +671,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     $("b-brief").addEventListener("click", function () { copy(brief(), "Brief copied. Give it to the agent."); });
     $("b-slack").addEventListener("click", function () { copy(slack(), "Slack request copied."); });
     $("b-notion").addEventListener("click", function () { copy(markdown(), "Copied. Paste it into Notion."); });
-    $("b-ics").addEventListener("click", downloadIcs);
+    $("b-ics").addEventListener("click", function () { downloadIcs(); });
     $("b-link").addEventListener("click", function () { copy(link(), "Link copied."); });
     $("b-print").addEventListener("click", function () { window.print(); });
     $("b-edit").addEventListener("click", openEditor);
@@ -608,6 +697,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       document.querySelectorAll("details").forEach(function (x, i) { x.open = !!wasOpen[i]; });
     });
     build(false);
+    initHero();
   }
 
   // A link holds the request only. It does not hold the property name or the host name.
@@ -917,23 +1007,36 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     ];
   }
 
-  // The sample run uses the same rules as the trip plan, with its own region and date.
+  // The travel policy picks one flight from the options that fit.
+  function pickFlight(options, fits, travellers) {
+    var ok = options.filter(fits);
+    if (!ok.length) return null;
+    var cheap = ok.slice().sort(function (x, y) { return x.price - y.price; })[0];
+    var non = ok.filter(function (o) { return o.stops === "non-stop"; }).sort(function (x, y) { return x.price - y.price; })[0];
+    var extra = non ? Math.round((non.price - cheap.price) / travellers) : 0;
+    if (non && extra <= RULES.nonStopPremium) {
+      return { o: non, why: non === cheap ? "It is non-stop and it is the cheapest flight that fits." : "It is non-stop and costs $" + extra + " more for each person, inside the $" + RULES.nonStopPremium + " limit." };
+    }
+    return { o: cheap, why: non ? "It is the cheapest flight that fits. The non-stop flight costs $" + extra + " more for each person, above the $" + RULES.nonStopPremium + " limit." : "It is the cheapest flight that fits." };
+  }
+
+  // The recorded run uses the same rules as the trip plan, with its own region and date.
   function agentRun() {
     var a = D.sampleRun, r = regionById(a.region);
-    var sc = schedule(r, a.demoDate, "Less manual labour");
+    var sc = schedule(r, a.demoDate, a.request.reason);
     var t = trip(r, a.demoDate, r.driveMin, a.travellers, sc.end, r.direct, r.roadKm);
-    function mark(list, fits) {
-      var ok = list.filter(fits);
-      return { list: list.map(function (o) { return { o: o, fits: fits(o) }; }), ok: ok };
-    }
-    var out = mark(a.out, function (o) { return toMin(o.arr) <= t.landBy; });
-    var back = mark(a.back, function (o) { return toMin(o.dep) >= t.backAfter; });
-    function best(ok) {
-      var non = ok.filter(function (o) { return o.stops === "non-stop"; });
-      var cheap = ok.slice().sort(function (x, y) { return x.price - y.price; })[0];
-      return { fast: non[0] || cheap, cheap: cheap };
-    }
-    return { a: a, r: r, t: t, out: out, back: back, pickOut: best(out.ok), pickBack: best(back.ok) };
+    function fitsOut(o) { return toMin(o.arr) <= t.landBy; }
+    function fitsBack(o) { return toMin(o.dep) >= t.backAfter && toMin(o.arr) <= RULES.latestHome; }
+    var cars = a.cars.options.filter(function (c) { return c.suv; }).sort(function (x, y) { return x.price - y.price; });
+    var rooms = a.rooms.options.filter(function (h) { return h.freeCancel && h.score >= RULES.roomScore; }).sort(function (x, y) { return x.price - y.price; });
+    return {
+      a: a, r: r, t: t,
+      out: a.flights.out.map(function (o) { return { o: o, fits: fitsOut(o) }; }),
+      back: a.flights.back.map(function (o) { return { o: o, fits: fitsBack(o) }; }),
+      pickOut: pickFlight(a.flights.out, fitsOut, a.travellers),
+      pickBack: pickFlight(a.flights.back, fitsBack, a.travellers),
+      car: cars[0], room: rooms[0]
+    };
   }
 
   function seasonCheck(s) {
@@ -990,25 +1093,21 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       : '<details style="margin-top:18px"><summary><b>Example of an agent result</b> <span>' + esc(regionById(a.region).town) + ", " + esc(longDate(a.demoDate)) + '</span></summary><div class="body">' + sampleHtml() + "</div></details>";
   }
 
+  function money(n) { return "$" + n.toLocaleString("en-AU"); }
+
   function sampleHtml() {
     var g = agentRun(), a = g.a;
-    function money(n) { return "$" + n.toLocaleString("en-AU"); }
-    function rows(label, set, picks) {
-      return set.list.map(function (x, i) {
-        var o = x.o, tagText = "";
-        if (o === picks.fast && o === picks.cheap) tagText = "Pick";
-        else if (o === picks.fast) tagText = "Fastest";
-        else if (o === picks.cheap) tagText = "Cheapest";
-        return "<tr><td class=\"t\">" + (i === 0 ? esc(label) : "") + "</td><td class=\"" + (x.fits ? "ok" : "no") + "\">" + esc(o.airline) + ", " + esc(o.stops) + "</td><td class=\"w " + (x.fits ? "ok" : "no") + "\">" + esc(o.dep) + " to " + esc(o.arr) + "</td><td class=\"n " + (x.fits ? "ok" : "no") + "\">" + money(o.price) + (tagText ? '<span class="pick">' + tagText + "</span>" : "") + "</td></tr>";
+    function rows(label, list, pick) {
+      return list.map(function (x, i) {
+        var o = x.o, cls = x.fits ? "ok" : "no";
+        return '<tr><td class="t">' + (i === 0 ? esc(label) : "") + '</td><td class="' + cls + '">' + esc(o.airline) + ", " + esc(o.stops) + '</td><td class="w ' + cls + '">' + esc(o.dep) + " to " + esc(o.arr) + '</td><td class="n ' + cls + '">' + money(o.price) + (pick && o === pick.o ? '<span class="pick">Pick</span>' : "") + "</td></tr>";
       }).join("");
     }
-    var fast = g.pickOut.fast.price + g.pickBack.fast.price, cheap = g.pickOut.cheap.price + g.pickBack.cheap.price;
     return '<table><thead><tr><th>Leg</th><th>Flight</th><th>Local times</th><th style="text-align:right">' + a.travellers + " adults</th></tr></thead><tbody>" +
       rows("Out, " + shortDate(g.t.outDay), g.out, g.pickOut) + rows("Back, " + shortDate(g.t.backDay), g.back, g.pickBack) + "</tbody></table>" +
-      '<p class="note">Sample run for ' + esc(g.r.label) + ", demo on " + esc(longDate(a.demoDate)) + ". The limits were: land by " + hm(g.t.landBy) + ", depart after " + hm(g.t.backAfter) + ". A flight with a line through it does not fit a limit.</p>" +
-      '<p class="note">Result: the fastest pair costs ' + money(fast) + " and the cheapest pair that fits costs " + money(cheap) + ". The non-stop flight home costs the same on the next day (" + money(a.nextDayNonStop) + "), so one more night does not save money. The agent left out a " + money(a.overnightSkipped) + " option that stops overnight in Brisbane. The agent stops here and asks a person to choose." +
-      src(a.source + ", recorded " + a.recorded, a.url) + "</p>" +
-      '<p class="note">Recorded on ' + esc(a.recorded) + " from " + esc(a.source) + ". Prices are one way for " + a.travellers + " adults with taxes. Bags are extra. Prices change. For a new request, copy the agent brief.</p>";
+      '<p class="note">Recorded run for ' + esc(g.r.label) + ", demo on " + esc(longDate(a.demoDate)) + ". The limits were: land by " + hm(g.t.landBy) + ", depart after " + hm(g.t.backAfter) + ". A flight with a line through it does not fit a limit.</p>" +
+      '<p class="note">Out: ' + esc(g.pickOut.why) + " Back: " + esc(g.pickBack.why) + " The two flights cost " + money(g.pickOut.o.price + g.pickBack.o.price) + "." + src(a.flights.source + ", recorded " + a.recorded, a.flights.url) + "</p>" +
+      '<p class="note">Recorded on ' + esc(a.recorded) + " from " + esc(a.flights.source) + ". Prices are one way for " + a.travellers + " adults with taxes. Bags are extra. Prices change.</p>";
   }
 
   function render(s) {
@@ -1067,8 +1166,8 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   }
 
   // The brief is the hand-off to the booking agent.
-  function brief(noLinks) {
-    var s = state, r = s.req.region, t = s.trip, c = s.req.crew, code = r.airport ? r.airport.code : r.label;
+  function brief(noLinks, s0) {
+    var s = s0 || state, r = s.req.region, t = s.trip, c = s.req.crew, code = r.airport ? r.airport.code : r.label;
     var L = [
       "TRIP BRIEF",
       "Demo: " + (s.req.prop ? s.req.prop + ", " : "") + r.label + ", " + longDate(s.req.date),
@@ -1102,8 +1201,8 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   }
 
   // The day-by-day plan for the crew. The blanks are for the booking numbers.
-  function itinerary() {
-    var s = state, r = s.req.region, t = s.trip, req = s.req;
+  function itinerary(s0) {
+    var s = s0 || state, r = s.req.region, t = s.trip, req = s.req;
     var code = r.airport ? r.airport.code : "the airport", air = r.airport ? r.airport.name : "the airport";
     var L = ["ITINERARY: " + r.town + " demo, " + longDate(req.date), "Crew: " + plural(req.crew, "person") + " from Sydney", ""];
     L.push(shortDate(t.outDay));
@@ -1128,8 +1227,8 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   }
 
   // A quote request for a road freight carrier.
-  function freightRequest() {
-    var s = state, r = s.req.region, t = s.trip;
+  function freightRequest(s0) {
+    var s = s0 || state, r = s.req.region, t = s.trip;
     return [
       "Subject: Quote request: Sydney to " + r.town + (r.state ? " " + r.state : "") + ", deliver by " + shortDate(t.freightDue),
       "",
@@ -1253,8 +1352,8 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     return t.getUTCFullYear() + pad(t.getUTCMonth() + 1) + pad(t.getUTCDate()) + "T" + pad(t.getUTCHours()) + pad(t.getUTCMinutes()) + "00Z";
   }
   function icsText(t) { return String(t).replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\\;"); }
-  function icsFile() {
-    var s = state, r = s.req.region, now = new Date();
+  function icsFile(s0) {
+    var s = s0 || state, r = s.req.region, now = new Date();
     var stamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + "T" + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + "00Z";
     var desc = s.rows.filter(function (x) { return x.timed; }).map(function (x) {
       return icsText(x.t + " " + x.crew + (x.roc ? " Sydney: " + x.roc : ""));
@@ -1273,10 +1372,10 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     L.push("END:VCALENDAR");
     return L.join("\r\n");
   }
-  function downloadIcs() {
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([icsFile()], { type: "text/calendar" }));
-    a.download = "demo-trip-" + state.req.region.id + "-" + state.req.date + ".ics";
+  function downloadIcs(s0) {
+    var s = s0 || state, a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([icsFile(s)], { type: "text/calendar" }));
+    a.download = "demo-trip-" + s.req.region.id + "-" + s.req.date + ".ics";
     document.body.appendChild(a); a.click(); a.remove();
     toast("Calendar file saved.");
   }
@@ -1298,7 +1397,105 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove("on"); }, 2200);
   }
 
-  window.__kit = { state: function () { return state; }, markdown: markdown, link: link, brief: brief, slack: slack, ics: icsFile, agent: agentRun, itinerary: itinerary, freight: freightRequest, prompt: agentPrompt };
+  // The prototype flow: a sample request, one press to accept, one press for each booking.
+  var hero = null;
+  function initHero() {
+    var a = D.sampleRun, q = a.request, r = regionById(a.region);
+    $("hero-rec").textContent = a.recorded;
+    $("req-meta").textContent = q.channel + " \u00b7 " + q.received + " \u00b7 sample request";
+    $("req-who").textContent = q.name + ", " + q.prop + ", near " + r.town + " " + r.state;
+    $("req-d").textContent = q.head.toLocaleString("en-AU") + " head. Main reason: " + q.reason.toLowerCase() + ". Moves the mob " + q.freq.toLowerCase() + ". Timing: " + q.timing.toLowerCase() + ".";
+    $("b-accept").addEventListener("click", accept);
+    $("approvals").addEventListener("click", function (e) {
+      var b = e.target.closest("a.btn");
+      if (b) { b.classList.add("done"); b.textContent = "Opened"; }
+    });
+    $("done").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-do]");
+      if (!b || !hero) return;
+      var what = b.getAttribute("data-do");
+      if (what === "ics") downloadIcs(hero);
+      if (what === "itin") copy(itinerary(hero), "Itinerary copied.");
+      if (what === "slack") copy(heroSlack(), "Slack summary copied.");
+      if (what === "brief") copy(brief(false, hero), "Brief copied.");
+    });
+  }
+
+  function heroPlan() {
+    var a = D.sampleRun, q = a.request, r = regionById(a.region);
+    return plan({ region: r, date: a.demoDate, crew: a.travellers, drive: r.driveMin, direct: r.direct, head: q.head, reason: q.reason, freq: q.freq, guests: q.guests, prop: q.prop, host: q.name });
+  }
+
+  function accept() {
+    hero = heroPlan();
+    var g = agentRun(), a = g.a, r = hero.req.region, t = hero.trip;
+    $("b-accept").disabled = true;
+    $("b-accept").textContent = "Accepted";
+    $("accept-note").textContent = "";
+    var steps = [
+      "Read the request.",
+      "Picked the date: " + shortDate(a.demoDate) + ". It is the first Wednesday with " + RULES.noticeDays + " days of notice.",
+      "Found the airport: " + r.airport.name + " (" + r.airport.code + "), " + hero.req.drive + " minutes from " + r.town + " by road.",
+      "Set the limits: land by " + hm(t.landBy) + " on " + shortDate(t.outDay) + ", depart after " + hm(t.backAfter) + " on " + shortDate(t.backDay) + ".",
+      "Compared " + (a.flights.out.length + a.flights.back.length) + " same-day flights, " + a.cars.options.length + " cars and " + a.rooms.options.length + " rooms.",
+      "Applied the travel policy and chose one of each.",
+      "Set the freight date: send by " + shortDate(t.freightBy) + ".",
+      "Wrote the itinerary, the guest invite, the run sheet and " + hero.deadlines.length + " deadlines."
+    ];
+    $("steps").innerHTML = steps.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
+    $("hero-out").hidden = false;
+    var items = $("steps").querySelectorAll("li");
+    items.forEach(function (li, i) { setTimeout(function () { li.classList.add("on"); }, 260 * (i + 1)); });
+    setTimeout(function () { renderApprovals(g); $("sec-ap").hidden = false; $("sec-done").hidden = false; }, 260 * (items.length + 1));
+  }
+
+  function mailto(text) {
+    var i = text.indexOf("\n\n"), subject = text.slice(0, i).replace(/^Subject: /, ""), body = text.slice(i + 2);
+    return "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  }
+
+  function renderApprovals(g) {
+    var a = g.a, t = hero.trip, r = hero.req.region, n = a.travellers;
+    var flights = g.pickOut.o.price + g.pickBack.o.price, rooms = g.room.price * t.rooms * t.nights;
+    var roomUrl = g.room.url + "?checkin=" + t.outDay + "&checkout=" + t.backDay + "&group_adults=1&no_rooms=1";
+    function row(k, v, d, price, small, label, href) {
+      return '<div class="ap"><div class="k">' + k + '</div><div class="main"><div class="v">' + esc(v) + '</div><div class="d">' + d + '</div></div><div class="p">' + price + (small ? "<small>" + esc(small) + "</small>" : "") + '</div><div class="no-print"><a class="btn" href="' + esc(href) + '" target="_blank" rel="noopener">' + label + "</a></div></div>";
+    }
+    $("approvals").innerHTML =
+      row("Flights", g.pickOut.o.airline + " " + g.pickOut.o.stops + " out, " + g.pickBack.o.airline + " " + g.pickBack.o.stops + " back",
+        esc(shortDate(t.outDay) + " " + g.pickOut.o.dep + " to " + g.pickOut.o.arr + ". " + shortDate(t.backDay) + " " + g.pickBack.o.dep + " to " + g.pickBack.o.arr + ". Out: " + g.pickOut.why + " Back: " + g.pickBack.why + " Bags are extra.") + src(a.flights.source + ", recorded " + a.recorded, a.flights.url),
+        money(flights), n + " adults", "Book &#8599;", a.flights.url) +
+      row("Car", g.car.name + ", " + g.car.cls,
+        esc(r.airport.name + " terminal, " + shortDate(t.outDay) + " to " + shortDate(t.backDay) + ". It is the cheapest SUV of the options compared.") + src(a.cars.source + ", recorded " + a.recorded, a.cars.url),
+        money(g.car.price), "listed price", "Book &#8599;", a.cars.url) +
+      row("Rooms", g.room.name + ", " + plural(t.rooms, g.room.room),
+        esc(plural(t.nights, "night") + " from " + shortDate(t.outDay) + ". Free cancellation, score " + g.room.score.toFixed(1) + ", " + g.room.km + " km from the centre of " + r.town + ". It is the lowest price of the options compared that meets the policy.") + src(a.rooms.source + ", recorded " + a.recorded, a.rooms.url),
+        money(rooms), money(g.room.price) + " a room", "Book &#8599;", roomUrl) +
+      row("Freight", "Road freight, Sydney to " + r.town,
+        esc(t.roadKm.toLocaleString("en-AU") + " km. Send by " + shortDate(t.freightBy) + ", deliver by " + shortDate(t.freightDue) + ". The button opens the quote request in your mail app."),
+        "Quote", "", "Request &#8599;", mailto(freightRequest(hero)));
+    $("total").textContent = money(flights + g.car.price + rooms);
+    $("total-note").textContent = "for " + plural(n, "person") + ", before freight";
+    $("done").innerHTML =
+      rowHtml({ k: "Calendar", v: plural(hero.deadlines.length, "deadline") + " and the demo day", d: "From " + shortDate(hero.deadlines[0].date) + " to " + shortDate(hero.deadlines[hero.deadlines.length - 1].date) + "." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="ics">Add to calendar</button></div></div></div>') +
+      rowHtml({ k: "Itinerary", v: "Day-by-day plan for the crew", d: "With blanks for the booking numbers." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="itin">Copy</button></div></div></div>') +
+      rowHtml({ k: "Guest invite", v: "Ready to send to the host", d: "Start " + hm12(hero.G) + ", finish by " + hm12(hero.close) + "." }).replace("</div></div></div>", '</div><div class="acts no-print"><a href="' + esc(mailto(hero.messages[0].body)) + '">Open in mail &#8599;</a></div></div></div>') +
+      rowHtml({ k: "Slack", v: "Summary for the team channel", d: "The trip, the picks and the total." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="slack">Copy</button></div></div></div>') +
+      rowHtml({ k: "Demo day", v: "Run sheet, kit list and pilot questions", d: "Open \u201cPlan a different request by hand\u201d below. It starts with this request." });
+  }
+
+  function heroSlack() {
+    var g = agentRun(), t = hero.trip, r = hero.req.region;
+    return [
+      "*Demo accepted: " + hero.req.prop + ", " + r.town + ", " + shortDate(hero.req.date) + "*",
+      "Crew: " + plural(hero.req.crew, "person") + ". Out " + shortDate(t.outDay) + " " + g.pickOut.o.dep + " (" + g.pickOut.o.airline + "), back " + shortDate(t.backDay) + " " + g.pickBack.o.dep + " (" + g.pickBack.o.airline + ").",
+      "Car: " + g.car.name + ". Rooms: " + g.room.name + ", " + plural(t.rooms, "room") + ".",
+      "Total: " + money(g.pickOut.o.price + g.pickBack.o.price + g.car.price + g.room.price * t.rooms * t.nights) + " before freight. Freight leaves by " + shortDate(t.freightBy) + ".",
+      "Waiting for a person: 4 approvals."
+    ].join("\n");
+  }
+
+  window.__kit = { hero: function () { return hero; }, heroSlack: heroSlack, state: function () { return state; }, markdown: markdown, link: link, brief: brief, slack: slack, ics: icsFile, agent: agentRun, itinerary: itinerary, freight: freightRequest, prompt: agentPrompt };
   init();
 })();
 </script>

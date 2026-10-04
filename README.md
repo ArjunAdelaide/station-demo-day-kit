@@ -1,6 +1,8 @@
 # Station demo day kit
 
-A trip planner for a cattle station demo day. It turns a demo request into the flights, the car, the rooms, the freight date, the deadlines and a brief for a booking agent. Arjun Kulshrestha built it for his Operations Associate application to Brumby.
+A prototype of one automation for a cattle station demo day. A demo request arrives, a person accepts it with one press, and an agent plans the trip: the date, the flights, the car, the rooms, the freight and the deadlines. A person approves each booking with one press. Arjun Kulshrestha built it for his Operations Associate application to Brumby.
+
+The request on the page is a sample. The flight, car and room options are real search results, recorded on 5 October 2026. Each "Book" button opens the booking page with the trip filled in. The page does not pay and does not book.
 
 This is unofficial work. It is not a Brumby product and it uses public information only.
 
@@ -20,7 +22,7 @@ Live page: https://arjunadelaide.github.io/station-demo-day-kit/
 
 `skill/SKILL.md` has the agent instructions. The agent takes the brief, searches flights, cars and rooms, and returns a shortlist. It does not pay. A person approves and books.
 
-The page shows one real run for Bowen, recorded from Google Flights on 4 October 2026. The data is in `regions.js` under `sampleRun`. The page shows it as the result only when the request is the same. For each other request it shows the limits and the live search links.
+The page shows one real run for Bowen: flights from Google Flights, cars from Kayak and rooms from Booking.com, recorded on 5 October 2026. The data is in `regions.js` under `sampleRun`. In the planner, the page shows it as the result only when the request is the same. For each other request it shows the limits and the live search links.
 
 The page does not get live prices. That needs an account with a flight data provider and a small server.
 
@@ -32,6 +34,9 @@ The planner rules are in one object, `RULES`, in `index.html`:
 - Land early enough to reach the property with 2.5 hours of daylight.
 - Allow 45 minutes at the airport for bags and the car.
 - Fly back after pack down, plus the drive, plus 75 minutes. After 16:30, fly the next morning.
+- Date: the first Wednesday with 21 days of notice.
+- Flights: the non-stop flight if it costs no more than $100 more for each person than the cheapest flight that fits. If not, the cheapest flight that fits and lands before 23:00.
+- Car: the cheapest SUV at the airport terminal. Rooms: free cancellation, a review score of 8 or more, then the lowest price.
 - One vehicle for each 4 people. One room for each person.
 - Road freight covers 700 km a day, plus 2 days for handling. Freight does not leave on a weekend.
 - Book 21 days before. Confirm numbers 7 days before.
