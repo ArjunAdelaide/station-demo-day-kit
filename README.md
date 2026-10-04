@@ -2,7 +2,7 @@
 
 A prototype of one automation for a cattle station demo day. A grazier books a demo on the website form. An agent plans the whole trip with no person in the loop: the date, the flights, the car, the rooms, the freight, the calendar holds and the messages. A person gives one approval for the bookings. My list of the same work by hand has 14 steps. Arjun Kulshrestha built it for his Operations Associate application to Brumby.
 
-The request on the page is a sample. The flight, car and room options are real search results, recorded on 5 October 2026. Each "Book" button opens the booking page with the trip filled in. The page does not pay and does not book.
+The request on the page is a sample. The flight, car and room options are real search results, recorded on 5 October 2026. A person approves one line, or all lines with one press. Each "Book" button opens the booking page with the trip filled in. The page does not pay and does not book.
 
 This is unofficial work. It is not a Brumby product and it uses public information only.
 
@@ -77,7 +77,7 @@ Then open http://localhost:8651.
 
 - Weather and town search: Open-Meteo (open-meteo.com).
 - Sunrise and sunset: calculated from the date and the location.
-- Flight links: the Virgin Australia booking page for a Virgin flight, and Kayak for the other flights. Each link has the route, the date and the travellers in it. Car links: Kayak. Room links: Booking.com.
+- Flight links: the Virgin Australia booking page for a Virgin flight, and Kayak for the other flights. Each link has the route, the date and the travellers in it. Car links: Kayak. Room links: Booking.com. The freight request and the guest invite open in Gmail with the subject and the text filled in.
 - Airports: OurAirports open data. Drive and freight distances: the OpenStreetMap road router (OSRM).
 - Region and operating facts: see the source links in `regions.js`. Checked 4 October 2026.
 

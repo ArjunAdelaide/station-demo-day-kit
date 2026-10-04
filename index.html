@@ -40,6 +40,7 @@ input::placeholder{color:var(--faint)}
 button{font:500 15px/1 var(--text);cursor:pointer;border-radius:4px;padding:12px 18px;border:1.5px solid var(--ink);background:transparent;color:var(--ink)}
 button:hover{background:rgba(36,30,23,.06)}
 button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.55;cursor:default}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 button.primary:hover{background:#873613}
 button.text{border:0;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font-weight:400;font-size:14px;border-radius:0}
@@ -80,6 +81,7 @@ ol.hand li{padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
 .card .ap:first-child{border-top:1px solid var(--line);margin-top:10px}
 .ap .st{display:block;font:500 11.5px/1.6 var(--text);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
 .ap a.go{font-size:14px;white-space:nowrap}
+.ap button.one{display:block;margin:0 0 6px auto;padding:7px 12px;font-size:13.5px}
 .total{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;font:600 19px/1.3 var(--display)}
 .total span{font:400 14px/1.4 var(--text);color:var(--mute)}
 .ok{color:var(--ink)}
@@ -183,7 +185,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     <div class="total"><div>Trip total <span id="total-note"></span></div><div id="total"></div></div>
     <div class="actions no-print" style="margin-top:4px">
       <button type="button" class="primary" id="b-approve">Approve and book all &rarr;</button>
-      <span class="status" id="approve-note">One press. The agent did the rest. This prototype does not pay or book.</span>
+      <span class="status" id="approve-note">One press for all lines, or approve each line. This prototype does not pay or book.</span>
     </div>
   </div>
 </section>
@@ -391,13 +393,13 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     <summary><b>How this becomes an internal tool</b></summary>
     <div class="body">
       <ol style="margin:0;padding-left:20px">
-        <li>A demo request arrives from the website form. The agent reads it in Slack or in email. No person fills in a form.</li>
-        <li>A person accepts the request with one press.</li>
+        <li>A demo request arrives from the website form in HubSpot. HubSpot gives the fields to the agent. No person fills in a form.</li>
         <li>The agent picks the date, finds the airport, sets the time limits, searches flights, cars and rooms, and applies the travel policy. This page does the planning now. I ran the searches once with Claude Code and recorded the results.</li>
-        <li>The agent posts one option for each booking. A person approves each one with one press. Payment stays with a person or with a company card that has a limit.</li>
+        <li>The agent makes one request with one line for each booking, as on this page. A person approves one line, or all lines with one press.</li>
+        <li>The agent books each approved line and posts the confirmations. See &ldquo;How the agent books&rdquo;.</li>
         <li>The itinerary, the deadlines, the run sheet and the guest messages go to Slack, the calendar, Notion and Intercom.</li>
       </ol>
-      <p style="margin-top:12px">Steps 1, 4 and 5 need access to Brumby systems. Step 3 needs a flight search service in place of the recorded searches.</p>
+      <p style="margin-top:12px">Steps 1, 4 and 5 need access to Brumby systems. Step 2 needs a flight search service in place of the recorded searches.</p>
     </div>
   </details>
   <details>
@@ -420,6 +422,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     <div class="body">
       <p>The Brumby demo form sends each request to HubSpot as a set of fields: the name, the email, the phone if the grazier gives it, where the stock is, the herd size, the main reason, how often the mob moves and the timing.</p>
       <p>In the company version, a HubSpot workflow calls the agent when a form arrives. The agent takes the fields, so it does not interpret an email. The repository has the handler: <code>intake/hubspot_to_record.py</code>. I tested it with two sample submissions that use the field names of the form.</p>
+      <p>The workflow step is &ldquo;Send a webhook&rdquo;. HubSpot lists it for Data Hub Professional and Enterprise. <a class="src" href="https://knowledge.hubspot.com/workflows/how-do-i-use-webhooks-with-hubspot-workflows" target="_blank" rel="noopener" title="HubSpot Knowledge Base">Source</a> I do not know which plan Brumby has. With a different plan, the agent reads the new submissions from HubSpot at a set interval. The result is the same request.</p>
       <p>The form does not give the property address, the date or the guest count. That context is in other places: the reply from the grazier, the crew calendars and the demo channel. For this reason the agent still needs the inbox, the calendar and Slack.</p>
       <h3>To run it for a company</h3>
       <ul>
@@ -429,6 +432,19 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
         <li>Approvals as buttons in Slack, a spend limit and a log of each action.</li>
         <li>Three stages: the agent only posts its plan for 2 weeks, then it prepares and a person approves, then the low-risk steps run with no press.</li>
       </ul>
+    </div>
+  </details>
+  <details>
+    <summary><b>How the agent books</b></summary>
+    <div class="body">
+      <p>I have not built this part. The prototype stops at the booking page. This is the design.</p>
+      <ul>
+        <li>Flights: a booking service with an interface for software. Duffel lists search and booking for <a href="https://duffel.com/flights/airlines/qantas" target="_blank" rel="noopener">Qantas</a>, <a href="https://duffel.com/flights/airlines/jetstar" target="_blank" rel="noopener">Jetstar</a> and <a href="https://duffel.com/flights/airlines/virgin-australia" target="_blank" rel="noopener">Virgin Australia</a>. For Virgin Australia it lists paid bags, changes and refunds as coming soon. The agent makes the order and pays from the balance of the company account. <a class="src" href="https://duffel.com/docs/api/v2/payments" target="_blank" rel="noopener" title="Duffel API">Source</a> The agent does not hold a card number. I have not tested Duffel on these routes.</li>
+        <li>Rooms: Duffel also has an accommodation service. Access is on request. <a class="src" href="https://duffel.com/docs/guides/getting-started-with-stays" target="_blank" rel="noopener" title="Duffel">Source</a></li>
+        <li>Car: I have not checked a booking service for the car. For now the agent opens the booking page with the trip filled in, and a person pays. A second option is a virtual card for one payment with an amount limit. <a class="src" href="https://www.airwallex.com/docs/api/issuing/cards/create" target="_blank" rel="noopener" title="Airwallex API">Source</a></li>
+        <li>Freight: the agent sends the quote request by email. A person approves the quote.</li>
+      </ul>
+      <p style="margin-top:12px">Three controls apply to each booking: a spend limit, a price check at the time of booking, and a log. If the price is above the approved price, the agent stops and asks again.</p>
     </div>
   </details>
   <details>
@@ -1507,11 +1523,27 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     $("question").textContent = a.question;
     renderApprovals(g);
 
+    // A person approves one line, or all lines with the large button.
+    function approveLine(el) {
+      el.classList.add("yes");
+      el.querySelector(".st").textContent = "Approved";
+      el.querySelector("button.one").hidden = true;
+      var all = document.querySelectorAll("#approvals .ap").length, left = document.querySelectorAll("#approvals .ap:not(.yes)").length, b = $("b-approve");
+      if (left) {
+        b.innerHTML = "Approve and book the rest &rarr;";
+        $("approve-note").textContent = (all - left) + " of " + all + " approved.";
+      } else {
+        b.disabled = true;
+        b.textContent = "Approved";
+        $("approve-note").textContent = "In the live tool the agent now books each line and posts the confirmations in Slack. This prototype does not pay or book. Each link opens the booking page with the route, the dates and the travellers filled in.";
+      }
+    }
+    $("approvals").addEventListener("click", function (e) {
+      var b = e.target.closest("button.one");
+      if (b) approveLine(b.closest(".ap"));
+    });
     $("b-approve").addEventListener("click", function () {
-      this.disabled = true;
-      this.textContent = "Approved";
-      document.querySelectorAll("#approvals .st").forEach(function (el) { el.textContent = "Approved"; });
-      $("approve-note").textContent = "In the live tool the agent now books each item with a company card that has a limit, and posts the confirmations in Slack. This prototype has no card. Each link opens a booking page with the route, the dates and the travellers filled in.";
+      document.querySelectorAll("#approvals .ap:not(.yes)").forEach(approveLine);
     });
     $("done").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-do]");
@@ -1529,9 +1561,10 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     return plan({ region: r, date: a.demoDate, crew: a.travellers, drive: r.driveMin, direct: r.direct, head: q.head, reason: q.reason, freq: q.freq, guests: q.guests, prop: q.prop, host: q.name });
   }
 
-  function mailto(text) {
+  // A Gmail compose link with the subject and the text filled in. A mailto link opens a blank tab when the browser has no mail app.
+  function gmail(text) {
     var i = text.indexOf("\n\n"), subject = text.slice(0, i).replace(/^Subject: /, ""), body = text.slice(i + 2);
-    return "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+    return "https://mail.google.com/mail/?view=cm&fs=1&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
   }
 
   function renderApprovals(g) {
@@ -1540,7 +1573,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     var roomUrl = g.room.url + "?checkin=" + t.outDay + "&checkout=" + t.backDay + "&group_adults=" + t.rooms + "&no_rooms=" + t.rooms;
     function go(label, href) { return '<a class="go" href="' + esc(href) + '" target="_blank" rel="noopener">' + label + " &#8599;</a>"; }
     function row(k, v, d, price, small, linksHtml) {
-      return '<div class="ap"><div class="k">' + k + '</div><div class="main"><div class="v">' + esc(v) + '</div><div class="d">' + d + '</div></div><div class="p">' + price + (small ? "<small>" + esc(small) + "</small>" : "") + '</div><div class="no-print" style="text-align:right;line-height:1.9"><span class="st"></span>' + linksHtml + "</div></div>";
+      return '<div class="ap"><div class="k">' + k + '</div><div class="main"><div class="v">' + esc(v) + '</div><div class="d">' + d + '</div></div><div class="p">' + price + (small ? "<small>" + esc(small) + "</small>" : "") + '</div><div class="no-print" style="text-align:right;line-height:1.9"><button type="button" class="one">Approve</button><span class="st"></span>' + linksHtml + "</div></div>";
     }
     var code = r.airport.code;
     var outUrl = flightLink(g.pickOut.o.airline, "SYD", code, t.outDay, n, g.pickOut.o.stops === "non-stop"), backUrl = flightLink(g.pickBack.o.airline, code, "SYD", t.backDay, n, g.pickBack.o.stops === "non-stop");
@@ -1555,14 +1588,14 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
         esc(plural(t.nights, "night") + " from " + shortDate(t.outDay) + ". Free cancellation, score " + g.room.score.toFixed(1) + ". The lowest price of the options compared.") + src(a.rooms.source + ", recorded " + a.recorded, a.rooms.url),
         money(rooms), money(g.room.price) + " a room", go("Book rooms", roomUrl)) +
       row("Freight", "Road freight, Sydney to " + r.town,
-        esc(t.roadKm.toLocaleString("en-AU") + " km. Send by " + shortDate(t.freightBy) + ". The quote request is written."),
-        "Quote", "", go("Send request", mailto(freightRequest(hero))));
+        esc(t.roadKm.toLocaleString("en-AU") + " km. Send by " + shortDate(t.freightBy) + ". The quote request is written. Add the carrier address and send."),
+        "Quote", "", go("Open request in Gmail", gmail(freightRequest(hero))));
     $("total").textContent = money(flights + g.car.price + rooms);
     $("total-note").textContent = "for " + plural(n, "person") + ", before freight";
     $("done").innerHTML =
       rowHtml({ k: "Calendar", v: plural(hero.deadlines.length, "deadline") + " and the demo day", d: "From " + shortDate(hero.deadlines[0].date) + " to " + shortDate(hero.deadlines[hero.deadlines.length - 1].date) + ". In my test the agent put these in Google Calendar as 9 holds. The button gives the same events as a file." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="ics">Add to calendar</button></div></div></div>') +
       rowHtml({ k: "Itinerary", v: "Day-by-day plan for the crew", d: "With blanks for the booking numbers." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="itin">Copy</button></div></div></div>') +
-      rowHtml({ k: "Guest invite", v: "Ready to send to the host", d: "Start " + hm12(hero.G) + ", finish by " + hm12(hero.close) + "." }).replace("</div></div></div>", '</div><div class="acts no-print"><a href="' + esc(mailto(hero.messages[0].body)) + '">Open in mail &#8599;</a></div></div></div>') +
+      rowHtml({ k: "Guest invite", v: "Ready to send to the host", d: "Start " + hm12(hero.G) + ", finish by " + hm12(hero.close) + "." }).replace("</div></div></div>", '</div><div class="acts no-print"><a href="' + esc(gmail(hero.messages[0].body)) + '" target="_blank" rel="noopener">Open in Gmail &#8599;</a></div></div></div>') +
       rowHtml({ k: "Slack", v: "Summary for the team channel", d: "The trip, the picks and the total." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="slack">Copy</button></div></div></div>') +
       rowHtml({ k: "Demo day", v: "Run sheet, kit list and pilot questions", d: "Open \u201cChange the plan by hand\u201d below. It starts with this request." });
   }
