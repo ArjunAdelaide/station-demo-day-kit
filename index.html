@@ -164,7 +164,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 <section aria-labelledby="h-hero">
   <p class="eyebrow">Prototype</p>
   <h1 id="h-hero">A demo request comes in. The trip plans itself.</h1>
-  <p class="lead">This is one automation I would build as Operations Associate. The request below is a sample. The flight, car and room options are real search results from <span id="hero-rec"></span>. The agent picks one of each. A person approves each booking with one press.</p>
+  <p class="lead">This is one automation I would build as Operations Associate. The request below is a test message. The agent reads it, builds the demo record and asks the grazier for the missing facts. The flight, car and room options are real search results from <span id="hero-rec"></span>. A person approves each booking with one press.</p>
 </section>
 
 <section aria-labelledby="h-in">
@@ -175,27 +175,36 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     <p class="d" id="req-d" style="color:var(--mute);margin:0"></p>
     <div class="actions no-print" style="margin-top:16px">
       <button type="button" class="primary" id="b-accept">Accept and plan &rarr;</button>
-      <span class="status" id="accept-note">No form to fill in. The agent reads the request.</span>
+      <span class="status" id="accept-note">No form to fill in. The agent reads the message.</span>
     </div>
   </div>
 </section>
 
 <div id="hero-out" hidden>
 
+<section aria-labelledby="h-rec">
+  <div class="head"><p class="eyebrow" id="h-rec">2. The agent builds the record</p></div>
+  <div id="record"></div>
+  <details>
+    <summary><b>The one question to the grazier</b> <span>Drafted as a reply. A person sends it.</span></summary>
+    <div class="body"><div class="msg" id="question"></div></div>
+  </details>
+</section>
+
 <section aria-labelledby="h-work">
-  <div class="head"><p class="eyebrow" id="h-work">2. The agent plans the trip</p></div>
+  <div class="head"><p class="eyebrow" id="h-work">3. The agent plans the trip</p></div>
   <ul class="steps" id="steps"></ul>
 </section>
 
 <section aria-labelledby="h-ap" id="sec-ap" hidden>
-  <div class="head"><p class="eyebrow" id="h-ap">3. You approve</p></div>
+  <div class="head"><p class="eyebrow" id="h-ap">4. You approve</p></div>
   <div id="approvals"></div>
   <div class="total"><div>Trip total <span id="total-note"></span></div><div id="total"></div></div>
   <p class="note">Each button opens the booking page with the trip filled in. A person pays. In the full tool, one press books with the supplier and posts the confirmation in Slack.</p>
 </section>
 
 <section aria-labelledby="h-done" id="sec-done" hidden>
-  <div class="head"><p class="eyebrow" id="h-done">4. Already done, with no press</p></div>
+  <div class="head"><p class="eyebrow" id="h-done">5. Already done, with no press</p></div>
   <div id="done"></div>
 </section>
 
@@ -370,17 +379,37 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     </div>
   </details>
   <details>
-    <summary><b>Other work I would automate</b></summary>
+    <summary><b>Where the agent gets its context</b></summary>
     <div class="body">
+      <p>It is one agent with a small number of connections. A person signs in to each connection once.</p>
       <ul>
-        <li>Go or no-go: at 15:00 on the day before, the agent posts the forecast against the flight limits and drafts the guest message for each result.</li>
-        <li>Guest numbers: replies to the invite update the head count, the catering order and the kit list.</li>
-        <li>After the demo: one follow-up draft for each guest in Intercom, photos to the asset library, and the receipts to the accounts system.</li>
-        <li>Onboarding: a new hire starts a checklist for accounts, equipment and a first-week calendar.</li>
-        <li>Support: tags for each Intercom conversation and a weekly list of the top five problems.</li>
-        <li>Field days: one calendar of exhibitor deadlines, and the same trip plan for each event.</li>
-        <li>Weekly digest: one Slack message with what is booked and what waits for a person.</li>
+        <li>Inbox: the agent reads the demo requests and the replies. It writes each answer as a draft.</li>
+        <li>Slack: the agent posts the request in the demo channel. A person accepts and approves there.</li>
+        <li>Calendar: the agent reads the free days of the crew and the pilot.</li>
+        <li>Notion: the demo record and the travel policy.</li>
+        <li>Intercom: the contact and the follow-up messages.</li>
+        <li>Flight search: live options in place of the recorded searches.</li>
       </ul>
+      <p style="margin-top:12px">The agent reads one shared inbox and one channel. It does not read personal mail or direct messages. In this prototype no connection is live. The agent read the test message from a file. The agent instructions are in the repository: <code>skill/demo-intake</code> and <code>skill/demo-trip-agent</code>. I ran the intake steps on the test message, and the record on this page is the result.</p>
+    </div>
+  </details>
+  <details>
+    <summary><b>The logistics map</b></summary>
+    <div class="body">
+      <table>
+        <thead><tr><th>Work</th><th>What starts it</th><th>The agent</th><th>A person</th></tr></thead>
+        <tbody>
+          <tr><td class="t" style="width:auto">Request</td><td>A form email</td><td>Fills the record. Drafts one question.</td><td class="roc">Accepts</td></tr>
+          <tr><td class="t" style="width:auto">Date</td><td>The grazier's reply</td><td>Offers two dates. Holds the calendar.</td><td class="roc">Nothing</td></tr>
+          <tr><td class="t" style="width:auto">Travel</td><td>An accepted demo</td><td>Picks the flights, the car and the rooms by policy.</td><td class="roc">One press each</td></tr>
+          <tr><td class="t" style="width:auto">Freight</td><td>An accepted demo</td><td>Sends the quote request with the dates.</td><td class="roc">Approves the quote</td></tr>
+          <tr><td class="t" style="width:auto">Guests</td><td>Replies to the invite</td><td>Updates the head count, the catering and the kit list.</td><td class="roc">Nothing</td></tr>
+          <tr><td class="t" style="width:auto">Go or no-go</td><td>15:00 the day before</td><td>Posts the forecast against the limits. Drafts both guest messages.</td><td class="roc">Makes the call</td></tr>
+          <tr><td class="t" style="width:auto">After</td><td>The end of the demo</td><td>Drafts the follow-ups. Files the photos and the receipts.</td><td class="roc">Sends</td></tr>
+          <tr><td class="t" style="width:auto">Field days</td><td>The event calendar</td><td>Makes the same trip plan for each event.</td><td class="roc">Approves</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:12px">The first four rows are in this prototype. The last four use the same record and the same connections.</p>
     </div>
   </details>
   <details>
@@ -1402,9 +1431,9 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   function initHero() {
     var a = D.sampleRun, q = a.request, r = regionById(a.region);
     $("hero-rec").textContent = a.recorded;
-    $("req-meta").textContent = q.channel + " \u00b7 " + q.received + " \u00b7 sample request";
-    $("req-who").textContent = q.name + ", " + q.prop + ", near " + r.town + " " + r.state;
-    $("req-d").textContent = q.head.toLocaleString("en-AU") + " head. Main reason: " + q.reason.toLowerCase() + ". Moves the mob " + q.freq.toLowerCase() + ". Timing: " + q.timing.toLowerCase() + ".";
+    $("req-meta").textContent = q.channel + " \u00b7 " + q.received;
+    $("req-who").textContent = "Demo request: " + q.name + ", near " + r.town + " " + r.state;
+    $("req-d").textContent = "About " + q.head.toLocaleString("en-AU") + " head. Main reason: " + q.reason.toLowerCase() + ". Moves the mob " + q.freq.toLowerCase() + ". Timing: " + q.timing.toLowerCase() + ". Phone: not given.";
     $("b-accept").addEventListener("click", accept);
     $("approvals").addEventListener("click", function (e) {
       var b = e.target.closest("a.btn");
@@ -1433,8 +1462,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     $("b-accept").textContent = "Accepted";
     $("accept-note").textContent = "";
     var steps = [
-      "Read the request.",
-      "Picked the date: " + shortDate(a.demoDate) + ". It is the first Wednesday with " + RULES.noticeDays + " days of notice.",
+      "Took the record. Planned for the first date that it offered: " + shortDate(a.demoDate) + ".",
       "Found the airport: " + r.airport.name + " (" + r.airport.code + "), " + hero.req.drive + " minutes from " + r.town + " by road.",
       "Set the limits: land by " + hm(t.landBy) + " on " + shortDate(t.outDay) + ", depart after " + hm(t.backAfter) + " on " + shortDate(t.backDay) + ".",
       "Compared " + (a.flights.out.length + a.flights.back.length) + " same-day flights, " + a.cars.options.length + " cars and " + a.rooms.options.length + " rooms.",
@@ -1442,6 +1470,11 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       "Set the freight date: send by " + shortDate(t.freightBy) + ".",
       "Wrote the itinerary, the guest invite, the run sheet and " + hero.deadlines.length + " deadlines."
     ];
+    var label = { confirmed: "From the message.", rule: "Set by a rule.", guess: "Guess.", missing: "Missing. The agent asks the grazier." };
+    $("record").innerHTML = a.record.map(function (f) {
+      return '<div class="row"><div class="k">' + esc(f.k) + '</div><div><div class="v"' + (f.status === "missing" ? ' style="color:var(--accent)"' : "") + ">" + esc(f.v) + '</div><div class="d">' + esc(label[f.status]) + (f.note ? " " + esc(f.note) : "") + "</div></div></div>";
+    }).join("");
+    $("question").textContent = a.question;
     $("steps").innerHTML = steps.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
     $("hero-out").hidden = false;
     var items = $("steps").querySelectorAll("li");
@@ -1487,7 +1520,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   function heroSlack() {
     var g = agentRun(), t = hero.trip, r = hero.req.region;
     return [
-      "*Demo accepted: " + hero.req.prop + ", " + r.town + ", " + shortDate(hero.req.date) + "*",
+      "*Demo accepted: " + (hero.req.prop ? hero.req.prop + ", " : "") + r.town + ", " + shortDate(hero.req.date) + "*",
       "Crew: " + plural(hero.req.crew, "person") + ". Out " + shortDate(t.outDay) + " " + g.pickOut.o.dep + " (" + g.pickOut.o.airline + "), back " + shortDate(t.backDay) + " " + g.pickBack.o.dep + " (" + g.pickBack.o.airline + ").",
       "Car: " + g.car.name + ". Rooms: " + g.room.name + ", " + plural(t.rooms, "room") + ".",
       "Total: " + money(g.pickOut.o.price + g.pickBack.o.price + g.car.price + g.room.price * t.rooms * t.nights) + " before freight. Freight leaves by " + shortDate(t.freightBy) + ".",

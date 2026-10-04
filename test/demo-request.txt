@@ -1,0 +1,14 @@
+Subject: Demo request: Bowen QLD [TEST]
+
+TEST MESSAGE. This is sample data for the demo trip agent. It is not a real request.
+
+New demo request from the website form
+
+Name: Pat Example
+Email: pat@example.com
+Phone: not given
+Whereabouts are you running stock? Near Bowen, North Queensland
+Roughly how many head are you running? About 1,800
+Main reason: Less manual labour
+How often are you shifting a mob at the moment? Every 1-2 weeks
+When would you like us to come out? In the next few weeks

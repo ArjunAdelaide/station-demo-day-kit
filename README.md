@@ -18,9 +18,15 @@ Live page: https://arjunadelaide.github.io/station-demo-day-kit/
 6. "Run the agent in Claude" opens Claude with the brief for this request. "Copy agent brief" and "Copy Slack request" give the hand-off and the approval message.
 7. The run sheet, the kit list, the pilot questions and the guest messages are in the lower sections.
 
+## The intake agent
+
+`skill/demo-intake/SKILL.md` has the instructions. The agent reads a demo request from the inbox, fills the demo record with a source and a status for each fact, drafts one question to the grazier for the missing facts, and returns the trip plan link. It sends nothing. A person sends the draft.
+
+`test/demo-request.txt` is a test message. I ran the intake steps on it, and the record on the page is the result. The agent needs an inbox connection to read real mail. It can also use Slack and a calendar when they are connected.
+
 ## The booking agent
 
-`skill/SKILL.md` has the agent instructions. The agent takes the brief, searches flights, cars and rooms, and returns a shortlist. It does not pay. A person approves and books.
+`skill/demo-trip-agent/SKILL.md` has the agent instructions. The agent takes the brief, searches flights, cars and rooms, and returns a shortlist. It does not pay. A person approves and books.
 
 The page shows one real run for Bowen: flights from Google Flights, cars from Kayak and rooms from Booking.com, recorded on 5 October 2026. The data is in `regions.js` under `sampleRun`. In the planner, the page shows it as the result only when the request is the same. For each other request it shows the limits and the live search links.
 
@@ -47,7 +53,9 @@ Each rule is a guess until Brumby sets it. The schedule is a template: select "E
 
 - `index.html`: the page. It has no build step and no server.
 - `regions.js`: the fact file. Each value has a source. A value with `guess: true` is an assumption.
-- `skill/SKILL.md`: the booking agent instructions.
+- `skill/demo-intake/SKILL.md`: the intake agent instructions.
+- `skill/demo-trip-agent/SKILL.md`: the booking agent instructions.
+- `test/demo-request.txt`: a test request message.
 
 ## Run it
 
