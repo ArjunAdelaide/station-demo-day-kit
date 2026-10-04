@@ -5,7 +5,15 @@ description: Read a new demo request from the inbox, fill the demo record, draft
 
 Process the new demo requests. $ARGUMENTS
 
-This is the first step of the demo trip automation. It turns a message into a record that the planner and the booking agent can use. No person fills in a form.
+This is the first step of the demo trip automation. It turns a request into a record that the planner and the booking agent can use. No person fills in a form, and no person starts the plan. The agent plans at once and asks for one approval at the end.
+
+## How much the agent does without a person
+
+Set one level for the team. Start at level 1 and go up when the team trusts the results.
+
+1. **Prepare.** The agent plans and writes each message as a draft. A person sends and books.
+2. **Send and hold.** The agent sends the standard messages to the grazier and makes the calendar holds. A person approves the bookings with one press.
+3. **Book inside the policy.** The agent books when the total is below the spend limit. It asks for approval only when a price is above the policy or a time limit does not fit.
 
 ## What you can touch
 
@@ -60,7 +68,7 @@ Proposed dates: <date 1> or <date 2> (<calendar checked, or calendar not connect
 Missing: <facts>
 Question to the grazier: drafted, not sent. <draft link>
 Trip plan: <plan link>
-Waiting for a person: accept or decline.
+Waiting for a person: one approval for the bookings.
 ```
 
 ## Record format

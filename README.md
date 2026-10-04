@@ -1,6 +1,6 @@
 # Station demo day kit
 
-A prototype of one automation for a cattle station demo day. A demo request arrives, a person accepts it with one press, and an agent plans the trip: the date, the flights, the car, the rooms, the freight and the deadlines. A person approves each booking with one press. Arjun Kulshrestha built it for his Operations Associate application to Brumby.
+A prototype of one automation for a cattle station demo day. A grazier books a demo on the website form. An agent plans the whole trip with no person in the loop: the date, the flights, the car, the rooms, the freight, the calendar holds and the messages. A person gives one approval for the bookings. My list of the same work by hand has 14 steps. Arjun Kulshrestha built it for his Operations Associate application to Brumby.
 
 The request on the page is a sample. The flight, car and room options are real search results, recorded on 5 October 2026. Each "Book" button opens the booking page with the trip filled in. The page does not pay and does not book.
 

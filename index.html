@@ -74,6 +74,12 @@ a.btn.done{background:transparent;color:var(--accent)}
 .ap .d{color:var(--mute);font-size:15px;margin-top:3px}
 .ap .p{font:600 19px/1.3 var(--display);white-space:nowrap;text-align:right}
 .ap .p small{display:block;font:400 13px/1.3 var(--text);color:var(--mute)}
+ol.hand{margin:0;padding-left:22px;color:var(--mute)}
+ol.hand li{padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
+.steps li{opacity:1}
+.card .ap:first-child{border-top:1px solid var(--line);margin-top:10px}
+.ap .st{display:block;font:500 11.5px/1.6 var(--text);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.ap a.go{font-size:14px;white-space:nowrap}
 .total{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;font:600 19px/1.3 var(--display)}
 .total span{font:400 14px/1.4 var(--text);color:var(--mute)}
 .ok{color:var(--ink)}
@@ -163,55 +169,71 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 
 <section aria-labelledby="h-hero">
   <p class="eyebrow">Prototype</p>
-  <h1 id="h-hero">A demo request comes in. The trip plans itself.</h1>
-  <p class="lead">This is one automation I would build as Operations Associate. The request below is a test message in my inbox. The agent read it, built the demo record and drafted one question to the grazier for the missing facts. The flight, car and room options are real search results from <span id="hero-rec"></span>. A person approves each booking with one press.</p>
+  <h1 id="h-hero">A grazier books a demo. You press one button.</h1>
+  <p class="lead">This is the automation I would lead as Operations Associate. A demo request arrives from the form. An agent plans the whole trip with no person in the loop. Then it asks for one approval. The request below is a test message, and the prices are real search results from <span id="hero-rec"></span>.</p>
 </section>
 
-<section aria-labelledby="h-in">
-  <div class="head"><p class="eyebrow" id="h-in">1. The request arrives</p></div>
+<section aria-labelledby="h-card">
+  <div class="head"><p class="eyebrow" id="h-card">Ready for your approval</p></div>
   <div class="card" style="margin-top:16px">
     <p class="meta" id="req-meta"></p>
     <p class="who" id="req-who"></p>
-    <p class="d" id="req-d" style="color:var(--mute);margin:0"></p>
-    <div class="actions no-print" style="margin-top:16px">
-      <button type="button" class="primary" id="b-accept">Accept and plan &rarr;</button>
-      <span class="status" id="accept-note">No form to fill in. The agent reads the message.</span>
+    <p class="d" id="req-d" style="color:var(--mute);margin:0 0 6px"></p>
+    <div id="approvals"></div>
+    <div class="total"><div>Trip total <span id="total-note"></span></div><div id="total"></div></div>
+    <div class="actions no-print" style="margin-top:4px">
+      <button type="button" class="primary" id="b-approve">Approve and book all &rarr;</button>
+      <span class="status" id="approve-note">One press. The agent did the rest. This prototype does not pay or book.</span>
     </div>
   </div>
 </section>
 
-<div id="hero-out" hidden>
-
-<section aria-labelledby="h-rec">
-  <div class="head"><p class="eyebrow" id="h-rec">2. The agent builds the record</p></div>
-  <div id="record"></div>
-  <details>
-    <summary><b>The one question to the grazier</b> <span>Drafted as a reply. A person sends it.</span></summary>
-    <div class="body"><div class="msg" id="question"></div></div>
-  </details>
-</section>
-
 <section aria-labelledby="h-work">
-  <div class="head"><p class="eyebrow" id="h-work">3. The agent plans the trip</p></div>
-  <ul class="steps" id="steps"></ul>
+  <div class="head"><p class="eyebrow" id="h-work">The work</p></div>
+  <div class="two" style="margin-top:16px">
+    <div>
+      <p class="who" style="margin-bottom:2px">By hand: 14 steps</p>
+      <p class="note" style="margin:0 0 6px">My list of the manual work for one demo.</p>
+      <ol class="hand">
+        <li>Read the request and reply to the grazier.</li>
+        <li>Agree on a date by email.</li>
+        <li>Check the crew calendars.</li>
+        <li>Search and compare the flights.</li>
+        <li>Book the flights.</li>
+        <li>Search and book the hire car.</li>
+        <li>Search and book the rooms.</li>
+        <li>Arrange the freight for the dock and the aircraft.</li>
+        <li>Put the trip and the deadlines in the calendar.</li>
+        <li>Write the itinerary for the crew.</li>
+        <li>Write and send the guest invite.</li>
+        <li>Send the reminder the day before.</li>
+        <li>Write the run sheet.</li>
+        <li>Send the follow-up after the demo.</li>
+      </ol>
+    </div>
+    <div>
+      <p class="who" style="margin-bottom:2px">With the agent: 1 press</p>
+      <p class="note" style="margin:0 0 6px">The agent did these steps for this request.</p>
+      <ul class="steps" id="steps"></ul>
+    </div>
+  </div>
 </section>
 
-<section aria-labelledby="h-ap" id="sec-ap" hidden>
-  <div class="head"><p class="eyebrow" id="h-ap">4. You approve</p></div>
-  <div id="approvals"></div>
-  <div class="total"><div>Trip total <span id="total-note"></span></div><div id="total"></div></div>
-  <p class="note">Each button opens the booking page with the trip filled in. A person pays. In the full tool, one press books with the supplier and posts the confirmation in Slack.</p>
-</section>
+<details class="fold" style="margin-top:44px">
+  <summary><b>How the agent got each fact</b></summary>
+  <div class="body">
+    <div id="record"></div>
+    <p class="note">The agent asks the grazier for the missing facts. In the live tool it sends this message itself. In my test it wrote the message as a draft.</p>
+    <div class="msg" id="question"></div>
+  </div>
+</details>
+<details class="fold">
+  <summary><b>What the agent prepared</b></summary>
+  <div class="body" id="done"></div>
+</details>
 
-<section aria-labelledby="h-done" id="sec-done" hidden>
-  <div class="head"><p class="eyebrow" id="h-done">5. Already done, with no press</p></div>
-  <div id="done"></div>
-</section>
-
-</div>
-
-<details class="fold" id="manual" style="margin-top:44px">
-<summary><b>Plan a different request by hand</b></summary>
+<details class="fold" id="manual">
+<summary><b>Change the plan by hand</b></summary>
 <div>
 
 <section class="no-print" aria-labelledby="h-req">
@@ -390,7 +412,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
         <li>Intercom: the contact and the follow-up messages.</li>
         <li>Flight search: live options in place of the recorded searches.</li>
       </ul>
-      <p style="margin-top:12px">The agent reads one shared inbox and one channel. It does not read personal mail or direct messages. In my test the inbox and the calendar were live, on my own accounts. The agent found the test message in the inbox, read it, and wrote the reply as a draft in the same thread. It sent nothing. The page itself does not connect to an inbox or a calendar. The agent instructions are in the repository: <code>skill/demo-intake</code> and <code>skill/demo-trip-agent</code>. I ran the intake steps on the test message, and the record on this page is the result.</p>
+      <p style="margin-top:12px">The agent reads one shared inbox and one channel. It does not read personal mail or direct messages. In my test the inbox and the calendar were live, on my own accounts. I started the agent by hand. In the live tool the form starts it. The agent found the test message in the inbox, read it, and wrote the reply as a draft in the same thread. It sent nothing. The page itself does not connect to an inbox or a calendar. The agent instructions are in the repository: <code>skill/demo-intake</code> and <code>skill/demo-trip-agent</code>. I ran the intake steps on the test message, and the record on this page is the result.</p>
     </div>
   </details>
   <details>
@@ -1446,14 +1468,39 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   var hero = null;
   function initHero() {
     var a = D.sampleRun, q = a.request, r = regionById(a.region);
+    hero = heroPlan();
+    var g = agentRun(), t = hero.trip;
     $("hero-rec").textContent = a.recorded;
-    $("req-meta").textContent = q.channel + " \u00b7 " + q.received;
-    $("req-who").textContent = "Demo request: " + q.name + ", near " + r.town + " " + r.state;
-    $("req-d").textContent = "About " + q.head.toLocaleString("en-AU") + " head. Main reason: " + q.reason.toLowerCase() + ". Moves the mob " + q.freq.toLowerCase() + ". Timing: " + q.timing.toLowerCase() + ". Phone: not given.";
-    $("b-accept").addEventListener("click", accept);
-    $("approvals").addEventListener("click", function (e) {
-      var b = e.target.closest("a.btn");
-      if (b) { b.classList.add("done"); b.textContent = "Opened"; }
+    $("req-meta").textContent = "Demo request \u00b7 " + q.received + " \u00b7 " + q.channel.toLowerCase();
+    $("req-who").textContent = q.name + ", near " + r.town + " " + r.state + ". Demo on " + shortDate(a.demoDate) + ".";
+    $("req-d").textContent = plural(a.travellers, "person") + " from Sydney, " + shortDate(t.outDay) + " to " + shortDate(t.backDay) + ". About " + q.head.toLocaleString("en-AU") + " head. Main reason: " + q.reason.toLowerCase() + ".";
+
+    var missing = a.record.filter(function (f) { return f.status === "missing"; }).length;
+    var steps = [
+      "Read the request. " + (a.record.length - missing) + " facts are set and " + missing + " are missing.",
+      "Wrote the message to the grazier: two dates and the missing facts.",
+      "Checked the calendar for both dates.",
+      "Found the airport: " + r.airport.code + ", " + hero.req.drive + " minutes from " + r.town + " by road.",
+      "Set the limits: land by " + hm(t.landBy) + ", depart after " + hm(t.backAfter) + ".",
+      "Compared " + (a.flights.out.length + a.flights.back.length) + " same-day flights, " + a.cars.options.length + " cars and " + a.rooms.options.length + " rooms. Chose one of each by the travel policy.",
+      "Wrote the freight quote request. Send by " + shortDate(t.freightBy) + ".",
+      "Put " + (hero.deadlines.length + 2) + " holds in the calendar.",
+      "Wrote the itinerary, the guest invite, the reminder, the follow-up and the run sheet."
+    ];
+    $("steps").innerHTML = steps.map(function (x) { return '<li class="on">' + esc(x) + "</li>"; }).join("");
+
+    var label = { confirmed: "From the request.", rule: "Set by a rule.", guess: "Guess.", missing: "Missing. The agent asks the grazier." };
+    $("record").innerHTML = a.record.map(function (f) {
+      return '<div class="row"><div class="k">' + esc(f.k) + '</div><div><div class="v"' + (f.status === "missing" ? ' style="color:var(--accent)"' : "") + ">" + esc(f.v) + '</div><div class="d">' + esc(label[f.status]) + (f.note ? " " + esc(f.note) : "") + "</div></div></div>";
+    }).join("");
+    $("question").textContent = a.question;
+    renderApprovals(g);
+
+    $("b-approve").addEventListener("click", function () {
+      this.disabled = true;
+      this.textContent = "Approved";
+      document.querySelectorAll("#approvals .st").forEach(function (el) { el.textContent = "Approved"; });
+      $("approve-note").textContent = "In the live tool the agent now books each item with a company card that has a limit, and posts the confirmations in Slack. This prototype has no card. Each line has a link to its booking page.";
     });
     $("done").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-do]");
@@ -1471,33 +1518,6 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     return plan({ region: r, date: a.demoDate, crew: a.travellers, drive: r.driveMin, direct: r.direct, head: q.head, reason: q.reason, freq: q.freq, guests: q.guests, prop: q.prop, host: q.name });
   }
 
-  function accept() {
-    hero = heroPlan();
-    var g = agentRun(), a = g.a, r = hero.req.region, t = hero.trip;
-    $("b-accept").disabled = true;
-    $("b-accept").textContent = "Accepted";
-    $("accept-note").textContent = "";
-    var steps = [
-      "Took the record. Planned for the first date that it offered: " + shortDate(a.demoDate) + ".",
-      "Found the airport: " + r.airport.name + " (" + r.airport.code + "), " + hero.req.drive + " minutes from " + r.town + " by road.",
-      "Set the limits: land by " + hm(t.landBy) + " on " + shortDate(t.outDay) + ", depart after " + hm(t.backAfter) + " on " + shortDate(t.backDay) + ".",
-      "Compared " + (a.flights.out.length + a.flights.back.length) + " same-day flights, " + a.cars.options.length + " cars and " + a.rooms.options.length + " rooms.",
-      "Applied the travel policy and chose one of each.",
-      "Set the freight date: send by " + shortDate(t.freightBy) + ".",
-      "Wrote the itinerary, the guest invite, the run sheet and " + hero.deadlines.length + " deadlines."
-    ];
-    var label = { confirmed: "From the message.", rule: "Set by a rule.", guess: "Guess.", missing: "Missing. The agent asks the grazier." };
-    $("record").innerHTML = a.record.map(function (f) {
-      return '<div class="row"><div class="k">' + esc(f.k) + '</div><div><div class="v"' + (f.status === "missing" ? ' style="color:var(--accent)"' : "") + ">" + esc(f.v) + '</div><div class="d">' + esc(label[f.status]) + (f.note ? " " + esc(f.note) : "") + "</div></div></div>";
-    }).join("");
-    $("question").textContent = a.question;
-    $("steps").innerHTML = steps.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
-    $("hero-out").hidden = false;
-    var items = $("steps").querySelectorAll("li");
-    items.forEach(function (li, i) { setTimeout(function () { li.classList.add("on"); }, 260 * (i + 1)); });
-    setTimeout(function () { renderApprovals(g); $("sec-ap").hidden = false; $("sec-done").hidden = false; }, 260 * (items.length + 1));
-  }
-
   function mailto(text) {
     var i = text.indexOf("\n\n"), subject = text.slice(0, i).replace(/^Subject: /, ""), body = text.slice(i + 2);
     return "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
@@ -1508,21 +1528,21 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     var flights = g.pickOut.o.price + g.pickBack.o.price, rooms = g.room.price * t.rooms * t.nights;
     var roomUrl = g.room.url + "?checkin=" + t.outDay + "&checkout=" + t.backDay + "&group_adults=1&no_rooms=1";
     function row(k, v, d, price, small, label, href) {
-      return '<div class="ap"><div class="k">' + k + '</div><div class="main"><div class="v">' + esc(v) + '</div><div class="d">' + d + '</div></div><div class="p">' + price + (small ? "<small>" + esc(small) + "</small>" : "") + '</div><div class="no-print"><a class="btn" href="' + esc(href) + '" target="_blank" rel="noopener">' + label + "</a></div></div>";
+      return '<div class="ap"><div class="k">' + k + '</div><div class="main"><div class="v">' + esc(v) + '</div><div class="d">' + d + '</div></div><div class="p">' + price + (small ? "<small>" + esc(small) + "</small>" : "") + '</div><div class="no-print" style="text-align:right"><span class="st"></span><a class="go" href="' + esc(href) + '" target="_blank" rel="noopener">' + label + " &#8599;</a></div></div>";
     }
     $("approvals").innerHTML =
       row("Flights", g.pickOut.o.airline + " " + g.pickOut.o.stops + " out, " + g.pickBack.o.airline + " " + g.pickBack.o.stops + " back",
-        esc(shortDate(t.outDay) + " " + g.pickOut.o.dep + " to " + g.pickOut.o.arr + ". " + shortDate(t.backDay) + " " + g.pickBack.o.dep + " to " + g.pickBack.o.arr + ". Out: " + g.pickOut.why + " Back: " + g.pickBack.why + " Bags are extra.") + src(a.flights.source + ", recorded " + a.recorded, a.flights.url),
-        money(flights), n + " adults", "Book &#8599;", a.flights.url) +
+        esc(shortDate(t.outDay) + " " + g.pickOut.o.dep + " to " + g.pickOut.o.arr + ". " + shortDate(t.backDay) + " " + g.pickBack.o.dep + " to " + g.pickBack.o.arr + ". Chosen by the travel policy. Bags are extra.") + src(a.flights.source + ", recorded " + a.recorded, a.flights.url),
+        money(flights), n + " adults", "Booking page", a.flights.url) +
       row("Car", g.car.name + ", " + g.car.cls,
-        esc(r.airport.name + " terminal, " + shortDate(t.outDay) + " to " + shortDate(t.backDay) + ". It is the cheapest SUV of the options compared.") + src(a.cars.source + ", recorded " + a.recorded, a.cars.url),
-        money(g.car.price), "listed price", "Book &#8599;", a.cars.url) +
+        esc(r.airport.name + " terminal, " + shortDate(t.outDay) + " to " + shortDate(t.backDay) + ". The cheapest SUV of the options compared.") + src(a.cars.source + ", recorded " + a.recorded, a.cars.url),
+        money(g.car.price), "listed price", "Booking page", a.cars.url) +
       row("Rooms", g.room.name + ", " + plural(t.rooms, g.room.room),
-        esc(plural(t.nights, "night") + " from " + shortDate(t.outDay) + ". Free cancellation, score " + g.room.score.toFixed(1) + ", " + g.room.km + " km from the centre of " + r.town + ". It is the lowest price of the options compared that meets the policy.") + src(a.rooms.source + ", recorded " + a.recorded, a.rooms.url),
-        money(rooms), money(g.room.price) + " a room", "Book &#8599;", roomUrl) +
+        esc(plural(t.nights, "night") + " from " + shortDate(t.outDay) + ". Free cancellation, score " + g.room.score.toFixed(1) + ". The lowest price of the options compared.") + src(a.rooms.source + ", recorded " + a.recorded, a.rooms.url),
+        money(rooms), money(g.room.price) + " a room", "Booking page", roomUrl) +
       row("Freight", "Road freight, Sydney to " + r.town,
-        esc(t.roadKm.toLocaleString("en-AU") + " km. Send by " + shortDate(t.freightBy) + ", deliver by " + shortDate(t.freightDue) + ". The button opens the quote request in your mail app."),
-        "Quote", "", "Request &#8599;", mailto(freightRequest(hero)));
+        esc(t.roadKm.toLocaleString("en-AU") + " km. Send by " + shortDate(t.freightBy) + ". The quote request is written."),
+        "Quote", "", "Quote request", mailto(freightRequest(hero)));
     $("total").textContent = money(flights + g.car.price + rooms);
     $("total-note").textContent = "for " + plural(n, "person") + ", before freight";
     $("done").innerHTML =
@@ -1530,7 +1550,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       rowHtml({ k: "Itinerary", v: "Day-by-day plan for the crew", d: "With blanks for the booking numbers." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="itin">Copy</button></div></div></div>') +
       rowHtml({ k: "Guest invite", v: "Ready to send to the host", d: "Start " + hm12(hero.G) + ", finish by " + hm12(hero.close) + "." }).replace("</div></div></div>", '</div><div class="acts no-print"><a href="' + esc(mailto(hero.messages[0].body)) + '">Open in mail &#8599;</a></div></div></div>') +
       rowHtml({ k: "Slack", v: "Summary for the team channel", d: "The trip, the picks and the total." }).replace("</div></div></div>", '</div><div class="acts no-print"><button type="button" class="text" data-do="slack">Copy</button></div></div></div>') +
-      rowHtml({ k: "Demo day", v: "Run sheet, kit list and pilot questions", d: "Open \u201cPlan a different request by hand\u201d below. It starts with this request." });
+      rowHtml({ k: "Demo day", v: "Run sheet, kit list and pilot questions", d: "Open \u201cChange the plan by hand\u201d below. It starts with this request." });
   }
 
   function heroSlack() {
