@@ -57,6 +57,8 @@ button.text:hover{background:transparent;color:var(--ink)}
 .bk{display:inline-flex;align-items:center;gap:7px;margin:0;font-size:14px;color:var(--mute);cursor:pointer}
 .bk input{width:16px;height:16px;padding:0;margin:0;border:1.5px solid rgba(36,30,23,.45);border-radius:3px;appearance:auto;-webkit-appearance:auto;accent-color:var(--accent)}
 .lead{color:var(--mute);margin:14px 0 4px;max-width:70ch;font-size:15.5px}
+a.btn{display:inline-block;font:500 15px/1 var(--text);border-radius:4px;padding:12px 18px;border:1.5px solid var(--accent);background:var(--accent);color:var(--on-accent);text-decoration:none}
+a.btn:hover{background:#873613}
 .ok{color:var(--ink)}
 .no{color:var(--faint);text-decoration:line-through}
 .pick{font:500 11.5px/1 var(--text);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-left:8px}
@@ -166,6 +168,10 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       <p class="err" id="e-drive"></p>
     </div>
     <div>
+      <label for="f-direct">Direct flight from Sydney?</label>
+      <select id="f-direct"></select>
+    </div>
+    <div>
       <label for="f-head">How many head?</label>
       <input id="f-head" type="number" min="1" step="1" value="1800" inputmode="numeric">
       <p class="err" id="e-head"></p>
@@ -195,6 +201,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   <div class="actions">
     <button class="primary" id="b-build" type="button">Plan the trip &rarr;</button>
     <span class="status" id="status" role="status"></span>
+    <span class="status">The plan updates when you change a field.</span>
   </div>
 </section>
 
@@ -209,14 +216,20 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   <div class="head"><p class="eyebrow" id="h-trip">Trip</p></div>
   <div id="trip"></div>
   <div class="actions no-print" style="margin-top:18px">
-    <button type="button" class="primary" id="b-brief">Copy agent brief</button>
-    <button type="button" id="b-slack">Copy Slack request</button>
+    <button type="button" id="b-itin">Copy itinerary</button>
+    <button type="button" id="b-freight">Copy freight request</button>
   </div>
 </section>
 
 <section aria-labelledby="h-agent">
   <div class="head"><p class="eyebrow" id="h-agent">Booking agent</p></div>
-  <p class="lead">The agent takes the brief, searches the flights and returns a shortlist. It applies the same time limits as the trip plan. It does not pay. A person approves and books.</p>
+  <p class="lead">The agent takes the brief for this request, searches the flights, the car and the rooms, and returns a shortlist. It applies the time limits below. It does not pay. A person approves and books.</p>
+  <div id="agent-legs"></div>
+  <div class="actions no-print" style="margin-top:18px">
+    <a class="btn" id="a-claude" href="#" target="_blank" rel="noopener">Run the agent in Claude &#8599;</a>
+    <button type="button" id="b-brief">Copy agent brief</button>
+    <button type="button" id="b-slack">Copy Slack request</button>
+  </div>
   <div id="agent"></div>
 </section>
 
@@ -304,7 +317,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       <h3>Guessed</h3>
       <p>The planner rules, the demo format and the freight lead time. I have not been to a Brumby demo day. For this reason the schedule is a template that you can edit.</p>
       <h3>Next</h3>
-      <p>Connect a flight search API so the shortlist is live for each request. Then send the shortlist to Slack for approval.</p>
+      <p>Connect a flight search service so the shortlist shows on this page for each request. That needs an account with a flight data provider and a small server. Then send the shortlist to Slack for approval.</p>
       <h3>Built</h3>
       <p>With Claude Code, in one evening. Each fact has a link to its source.</p>
     </div>
@@ -332,7 +345,8 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 (function () {
   var D = window.KIT_DATA;
   var $ = function (id) { return document.getElementById(id); };
-  var state = null, editing = null;
+  var state = null, editing = null, driveTouched = false, townCache = {};
+  var SYDNEY = { lat: -33.91, lon: 151.195 }; // Alexandria, the Brumby base
   var TPL_KEY = "demoDayKit.template.v1";
   var BOOK_KEY = "demoDayKit.booked.v1";
 
@@ -346,7 +360,9 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     pickup: 45,      // minutes at the airport for bags and the car
     checkin: 75,     // minutes for the car return and check-in
     latestBack: 990, // 16:30. After this time, fly the next morning
-    freightDays: 7,  // freight leaves this many days before the outbound flight
+    perVehicle: 4,   // people for each hire vehicle
+    freightKmPerDay: 700, // road freight distance for each day
+    freightHandling: 2,   // days for pickup and delivery
     bookDays: 21,    // book travel and send invites this many days before the demo
     confirmDays: 7   // confirm guest numbers this many days before the demo
   };
@@ -355,8 +371,9 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     "Land early enough to reach the property with " + (RULES.daylight / 60) + " hours of daylight for the site walk, the dock set-up and the rehearsal flight.",
     "Allow " + RULES.pickup + " minutes at the airport for bags and the car.",
     "Fly back after pack down, plus the drive, plus " + RULES.checkin + " minutes for the car return and check-in. If that time is after 16:30, fly the next morning.",
-    "One room for each person.",
-    "Freight leaves " + RULES.freightDays + " days before the outbound flight.",
+    "One room for each person. One vehicle for each " + RULES.perVehicle + " people.",
+    "Road freight covers " + RULES.freightKmPerDay + " km a day, plus " + RULES.freightHandling + " days for pickup and delivery. Freight does not leave on a weekend.",
+    "For a town that is not in the fact file, the planner takes the nearest airport in the open airport data and gets the drive from a road router.",
     "Book travel and send invites " + RULES.bookDays + " days before the demo. Confirm numbers " + RULES.confirmDays + " days before.",
     "Guests arrive 60 minutes after sunrise. You can change this in the schedule."
   ];
@@ -484,6 +501,27 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     return { rise: loc(u.rise), set: loc(u.set), off: off };
   }
 
+  function haversine(lat1, lon1, lat2, lon2) {
+    var k = Math.PI / 180, a = Math.sin((lat2 - lat1) * k / 2), b = Math.sin((lon2 - lon1) * k / 2);
+    return 12742 * Math.asin(Math.sqrt(a * a + Math.cos(lat1 * k) * Math.cos(lat2 * k) * b * b));
+  }
+  function nearestAirport(lat, lon) {
+    var best = null;
+    D.airports.forEach(function (a) {
+      var km = haversine(lat, lon, a[2], a[3]);
+      if (!best || km < best.km) best = { code: a[0], name: a[1] + " Airport", lat: a[2], lon: a[3], km: km };
+    });
+    return best;
+  }
+  // Road distance and time from the OpenStreetMap router. It returns null if the router does not answer.
+  function road(lat1, lon1, lat2, lon2) {
+    var url = "https://router.project-osrm.org/route/v1/driving/" + lon1 + "," + lat1 + ";" + lon2 + "," + lat2 + "?overview=false";
+    return fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+      var x = j.routes && j.routes[0];
+      return x ? { km: x.distance / 1000, min: x.duration / 60 } : null;
+    }).catch(function () { return null; });
+  }
+
   function fillSelect(el, items) {
     el.innerHTML = items.map(function (it) { return '<option value="' + esc(it.v) + '">' + esc(it.t) + "</option>"; }).join("");
   }
@@ -494,6 +532,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     fillSelect($("f-region"), D.regions.map(function (r) { return { v: r.id, t: r.label }; }).concat([{ v: "other", t: "Another town" }]));
     fillSelect($("f-reason"), plain(D.reasons));
     fillSelect($("f-freq"), plain(D.frequencies));
+    fillSelect($("f-direct"), [{ v: "yes", t: "Yes" }, { v: "no", t: "No" }]);
     $("f-reason").value = "Less manual labour";
     $("f-freq").value = "Every 1 to 2 weeks";
     // Default: the first Wednesday that is 6 or more days away, so the live forecast is open.
@@ -510,18 +549,36 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     D.regions.forEach(function (r) { ["why", "flight", "drive", "climate"].forEach(function (k) { add(r[k].source, r[k].url); }); });
     D.operating.forEach(function (o) { add(o.source, o.url); });
     add(D.battery.source, D.battery.url);
+    add(D.airportsSource.source, D.airportsSource.url);
+    add("OpenStreetMap road router (drive and freight distance)", "https://project-osrm.org/");
     add(D.sampleRun.source + ", sample run recorded " + D.sampleRun.recorded, D.sampleRun.url);
     $("sources").innerHTML = list.map(function (s) { return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a></li>"; }).join("");
 
     $("f-region").addEventListener("change", function () {
       $("other-wrap").hidden = this.value !== "other";
       var r = regionById(this.value);
-      $("f-drive").value = r ? r.driveMin : 60;
+      driveTouched = false;
+      if (r) { $("f-drive").value = r.driveMin; $("f-direct").value = r.direct ? "yes" : "no"; }
+      else $("f-direct").value = "no";
     });
+    $("f-drive").addEventListener("input", function () { driveTouched = true; });
+    $("f-town").addEventListener("input", function () { driveTouched = false; });
     ["f-town", "f-head", "f-date", "f-guests", "f-crew", "f-drive"].forEach(function (id) {
       $(id).addEventListener("input", function () { $("e-" + id.slice(2)).textContent = ""; });
     });
-    $("b-build").addEventListener("click", build);
+    // The plan follows the request. Each change builds the plan again.
+    var timer;
+    function soon(ms) { clearTimeout(timer); timer = setTimeout(function () { build(true); }, ms); }
+    ["f-region", "f-date", "f-crew", "f-drive", "f-direct", "f-head", "f-reason", "f-freq", "f-guests"].forEach(function (id) {
+      $(id).addEventListener("input", function () { soon(350); });
+      $(id).addEventListener("change", function () { soon(50); });
+    });
+    ["f-town", "f-prop", "f-host"].forEach(function (id) {
+      $(id).addEventListener("change", function () { soon(50); });
+    });
+    $("b-build").addEventListener("click", function () { build(false); });
+    $("b-itin").addEventListener("click", function () { copy(itinerary(), "Itinerary copied."); });
+    $("b-freight").addEventListener("click", function () { copy(freightRequest(), "Freight request copied."); });
     $("b-brief").addEventListener("click", function () { copy(brief(), "Brief copied. Give it to the agent."); });
     $("b-slack").addEventListener("click", function () { copy(slack(), "Slack request copied."); });
     $("b-notion").addEventListener("click", function () { copy(markdown(), "Copied. Paste it into Notion."); });
@@ -550,7 +607,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     window.addEventListener("afterprint", function () {
       document.querySelectorAll("details").forEach(function (x, i) { x.open = !!wasOpen[i]; });
     });
-    build();
+    build(false);
   }
 
   // A link holds the request only. It does not hold the property name or the host name.
@@ -561,6 +618,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     q.set("date", $("f-date").value);
     q.set("crew", $("f-crew").value);
     q.set("drive", $("f-drive").value);
+    q.set("direct", $("f-direct").value === "yes" ? "1" : "0");
     q.set("head", $("f-head").value);
     q.set("guests", $("f-guests").value);
     q.set("reason", String($("f-reason").selectedIndex));
@@ -573,12 +631,13 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     if (where) {
       var known = !!regionById(where);
       $("f-region").value = known ? where : "other";
-      if (known) $("f-drive").value = regionById(where).driveMin;
-      else { $("f-town").value = where.slice(0, 60); $("other-wrap").hidden = false; $("f-drive").value = 60; }
+      if (known) { $("f-drive").value = regionById(where).driveMin; $("f-direct").value = regionById(where).direct ? "yes" : "no"; }
+      else { $("f-town").value = where.slice(0, 60); $("other-wrap").hidden = false; $("f-direct").value = "no"; }
     }
+    if (q.has("direct")) $("f-direct").value = q.get("direct") === "1" ? "yes" : "no";
     if (/^\d{4}-\d{2}-\d{2}$/.test(q.get("date") || "")) $("f-date").value = q.get("date");
     if (+q.get("crew") >= 1 && +q.get("crew") <= 9) $("f-crew").value = Math.round(+q.get("crew"));
-    if (q.has("drive") && +q.get("drive") >= 0 && +q.get("drive") <= 900) $("f-drive").value = Math.round(+q.get("drive"));
+    if (q.has("drive") && +q.get("drive") >= 0 && +q.get("drive") <= 900) { $("f-drive").value = Math.round(+q.get("drive")); driveTouched = true; }
     if (+q.get("head") >= 1) $("f-head").value = Math.round(+q.get("head"));
     if (+q.get("guests") >= 1) $("f-guests").value = Math.round(+q.get("guests"));
     var ri = +q.get("reason"), fi = +q.get("moves");
@@ -600,29 +659,44 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   function resolveRegion() {
     var id = $("f-region").value;
     if (id !== "other") return Promise.resolve(regionById(id));
-    var url = "https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&countryCode=AU&name=" + encodeURIComponent($("f-town").value.trim());
+    var key = $("f-town").value.trim().toLowerCase();
+    if (townCache[key]) return Promise.resolve(townCache[key]);
+    var url = "https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&countryCode=AU&name=" + encodeURIComponent(key);
     return fetch(url).then(function (r) { return r.json(); }).then(function (j) {
       var au = (j.results || []).filter(function (x) { return x.country_code === "AU"; });
       if (!au.length) throw new Error("notfound");
-      var g = au[0];
-      return {
+      var g = au[0], ap = nearestAirport(g.latitude, g.longitude);
+      var r = {
         id: "other", custom: true, town: g.name, state: g.admin1 || "",
         label: g.name + (g.admin1 ? ", " + g.admin1 : ""),
         lat: g.latitude, lon: g.longitude, tz: g.timezone || "Australia/Sydney",
-        tropical: g.latitude > -23.44, direct: false
+        tropical: g.latitude > -23.44, direct: false,
+        airport: { code: ap.code, name: ap.name }
       };
+      // The road router gives the drive from the airport and the freight distance from Sydney.
+      return Promise.all([road(ap.lat, ap.lon, r.lat, r.lon), road(SYDNEY.lat, SYDNEY.lon, r.lat, r.lon)]).then(function (res) {
+        r.routed = !!(res[0] && res[1]);
+        r.driveKm = Math.round(res[0] ? res[0].km : ap.km * 1.3);
+        r.driveMin = Math.max(5, Math.round((res[0] ? res[0].min : ap.km * 1.3 / 80 * 60) / 5) * 5);
+        r.roadKm = Math.round(res[1] ? res[1].km : haversine(SYDNEY.lat, SYDNEY.lon, r.lat, r.lon) * 1.3);
+        townCache[key] = r;
+        return r;
+      });
     });
   }
 
-  function build() {
+  function build(auto) {
+    if (auto && $("f-region").value === "other" && !$("f-town").value.trim()) return;
     if (!validate()) return;
     $("status").textContent = "Planning";
     resolveRegion().then(function (region) {
+      if (region.custom && !driveTouched) $("f-drive").value = region.driveMin;
       state = plan({
         region: region,
         date: $("f-date").value,
         crew: Math.round(+$("f-crew").value),
         drive: Math.round(+$("f-drive").value),
+        direct: $("f-direct").value === "yes",
         head: Math.round(+$("f-head").value),
         reason: $("f-reason").value,
         freq: $("f-freq").value,
@@ -671,19 +745,23 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   }
 
   // The travel plan. It follows the schedule, the drive time and the daylight on the day before.
-  function trip(r, date, drive, crew, end) {
-    var direct = !!r.direct;
+  function trip(r, date, drive, crew, end, direct, roadKm) {
     var walkDay = shiftDate(date, -1);
     var outDay = direct ? walkDay : shiftDate(date, -2);
     var landBy = Math.floor((localSun(walkDay, r).set - RULES.daylight - drive - RULES.pickup) / 5) * 5;
     var backAfter = Math.ceil((end + drive + RULES.checkin) / 5) * 5;
     var sameDay = direct && backAfter <= RULES.latestBack;
     var backDay = sameDay ? date : shiftDate(date, 1);
+    var transit = Math.ceil(roadKm / RULES.freightKmPerDay) + RULES.freightHandling;
+    var freightBy = shiftDate(outDay, -transit);
+    var dow = new Date(freightBy + "T12:00:00Z").getUTCDay();
+    if (dow === 6) freightBy = shiftDate(freightBy, -1);
+    if (dow === 0) freightBy = shiftDate(freightBy, -2);
     return {
       direct: direct, outDay: outDay, walkDay: walkDay, backDay: backDay, sameDay: sameDay,
       landBy: landBy, backAfter: backAfter,
-      nights: dayDiff(outDay, backDay), rooms: crew,
-      freightBy: shiftDate(outDay, -RULES.freightDays)
+      nights: dayDiff(outDay, backDay), rooms: crew, vehicles: Math.ceil(crew / RULES.perVehicle),
+      roadKm: roadKm, transit: transit, freightBy: freightBy, freightDue: shiftDate(outDay, -1)
     };
   }
 
@@ -732,7 +810,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     var s = schedule(r, req.date, req.reason);
     s.req = req;
     s.weather = null;
-    s.trip = trip(r, req.date, req.drive, req.crew, s.end);
+    s.trip = trip(r, req.date, req.drive, req.crew, s.end, req.direct, r.roadKm);
     s.links = links(s);
     s.deadlines = deadlines(s);
     s.bookKey = (r.custom ? r.label : r.id) + "|" + req.date;
@@ -802,24 +880,28 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
 
   function tripRows(s) {
     var r = s.req.region, t = s.trip, req = s.req, air = r.airport ? r.airport.name + " (" + r.airport.code + ")" : "the nearest airport";
-    var outText = r.custom
-      ? "The airport for " + r.town + " is not in the fact file. The planner allows a full travel day."
-      : r.flight.text + (t.direct ? " Land by " + hm(t.landBy) + " to reach the property with " + (RULES.daylight / 60) + " hours of daylight." : " The site walk is on " + shortDate(t.walkDay) + ".");
+    var flightText = r.custom
+      ? "The nearest airport in the open airport data is " + air + ", " + r.driveKm + " km from " + r.town + " by road. Confirm the service in the search."
+      : r.flight.text;
+    var outText = flightText + (t.direct
+      ? " Land by " + hm(t.landBy) + " to reach the property with " + (RULES.daylight / 60) + " hours of daylight."
+      : " With no direct flight, the planner allows a travel day. The site walk is on " + shortDate(t.walkDay) + ".");
+    var flightSrc = r.custom ? D.airportsSource : r.flight;
     return [
       {
         id: "out", k: "Flight out", v: shortDate(t.outDay) + (t.direct ? ", land by " + hm(t.landBy) : ", travel day"),
-        d: outText, name: r.flight && r.flight.source, url: r.flight && r.flight.url, go: "Search flights", href: s.links.out
+        d: outText, name: flightSrc.source, url: flightSrc.url, go: "Search flights", href: s.links.out
       },
       {
         id: "back", k: "Flight back", v: shortDate(t.backDay) + (t.sameDay ? ", depart after " + hm(t.backAfter) : ", first flight"),
         d: t.sameDay
           ? "Pack down ends at " + hm(s.end) + ". Add " + req.drive + " minutes for the drive and " + RULES.checkin + " minutes for the car return and check-in. If no flight fits, stay one more night."
-          : (t.direct ? "The earliest departure is " + hm(t.backAfter) + ", which is too late for the same day." : "There is no direct flight, so the same day is too tight.") + " Fly the next morning.",
+          : (t.direct ? "The earliest departure is " + hm(t.backAfter) + ", which is too late for the same day." : "With no direct flight, the same day is too tight.") + " Fly the next morning.",
         go: "Search flights", href: s.links.back
       },
       {
-        id: "car", k: "Car", v: "1 vehicle, " + shortDate(t.outDay) + " to " + shortDate(t.backDay),
-        d: "Pick up and return at " + air + ". The drive to the property is " + req.drive + " minutes. Ask the host what vehicle the property road needs.",
+        id: "car", k: "Car", v: plural(t.vehicles, "vehicle") + ", " + shortDate(t.outDay) + " to " + shortDate(t.backDay),
+        d: "Pick up and return at " + air + ". The drive to the property is " + req.drive + " minutes." + (r.custom && !driveTouched ? " This time is to the town. Change it for the property." : "") + " Ask the host what vehicle the property road needs.",
         name: r.drive && r.drive.source, url: r.drive && r.drive.url, go: "Search cars", href: s.links.car
       },
       {
@@ -829,7 +911,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       },
       {
         id: "freight", k: "Freight", v: "Send by " + shortDate(t.freightBy),
-        d: "The dock, the aircraft and its batteries go by road. " + D.battery.text + " The " + RULES.freightDays + "-day lead time is a guess. Confirm it with the carrier.",
+        d: "Sydney to " + r.town + " is " + t.roadKm.toLocaleString("en-AU") + " km by road. At " + RULES.freightKmPerDay + " km a day plus " + RULES.freightHandling + " days for handling, allow " + plural(t.transit, "day") + ". The dock, the aircraft and its batteries go by road. " + D.battery.text + " Confirm the rate with the carrier.",
         name: D.battery.source, url: D.battery.url
       }
     ];
@@ -839,7 +921,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   function agentRun() {
     var a = D.sampleRun, r = regionById(a.region);
     var sc = schedule(r, a.demoDate, "Less manual labour");
-    var t = trip(r, a.demoDate, r.driveMin, a.travellers, sc.end);
+    var t = trip(r, a.demoDate, r.driveMin, a.travellers, sc.end, r.direct, r.roadKm);
     function mark(list, fits) {
       var ok = list.filter(fits);
       return { list: list.map(function (o) { return { o: o, fits: fits(o) }; }), ok: ok };
@@ -890,7 +972,25 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       (acts ? '<div class="acts no-print">' + acts + "</div>" : "") + "</div></div>";
   }
 
-  function renderAgent() {
+  function agentPrompt() {
+    return "You are a travel booking agent. Use web search to find real options for this brief. Do not pay and do not book.\n\n" + brief(true) +
+      "\n\nReturn: 3 flight options for each leg (airline, stops, times, price, fits or not), the fastest and the cheapest pair that fit, 2 car options, 2 room options, the date and source of each search, and the one decision a person must make.";
+  }
+
+  function renderAgent(s) {
+    var r = s.req.region, t = s.trip, code = r.airport ? r.airport.code : r.label;
+    $("agent-legs").innerHTML =
+      rowHtml({ k: "Out", v: shortDate(t.outDay) + ", SYD to " + code, d: t.direct ? "Limit: land by " + hm(t.landBy) + ". Non-stop first." : "Limit: arrive on this day. A connection is expected.", go: "Open live search", href: s.links.out }) +
+      rowHtml({ k: "Back", v: shortDate(t.backDay) + ", " + code + " to SYD", d: t.sameDay ? "Limit: depart after " + hm(t.backAfter) + "." : "Limit: first flight of the day.", go: "Open live search", href: s.links.back });
+    $("a-claude").href = "https://claude.ai/new?q=" + encodeURIComponent(agentPrompt());
+    var a = D.sampleRun;
+    var match = a.region === r.id && a.demoDate === s.req.date && a.travellers === s.req.crew && s.req.direct && s.req.drive === r.driveMin;
+    $("agent").innerHTML = match
+      ? '<p class="note" style="margin:22px 0 4px;color:var(--ink)">The agent ran this request on ' + esc(a.recorded) + ". This is the result.</p>" + sampleHtml()
+      : '<details style="margin-top:18px"><summary><b>Example of an agent result</b> <span>' + esc(regionById(a.region).town) + ", " + esc(longDate(a.demoDate)) + '</span></summary><div class="body">' + sampleHtml() + "</div></details>";
+  }
+
+  function sampleHtml() {
     var g = agentRun(), a = g.a;
     function money(n) { return "$" + n.toLocaleString("en-AU"); }
     function rows(label, set, picks) {
@@ -903,8 +1003,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       }).join("");
     }
     var fast = g.pickOut.fast.price + g.pickBack.fast.price, cheap = g.pickOut.cheap.price + g.pickBack.cheap.price;
-    $("agent").innerHTML =
-      '<table><thead><tr><th>Leg</th><th>Flight</th><th>Local times</th><th style="text-align:right">' + a.travellers + " adults</th></tr></thead><tbody>" +
+    return '<table><thead><tr><th>Leg</th><th>Flight</th><th>Local times</th><th style="text-align:right">' + a.travellers + " adults</th></tr></thead><tbody>" +
       rows("Out, " + shortDate(g.t.outDay), g.out, g.pickOut) + rows("Back, " + shortDate(g.t.backDay), g.back, g.pickBack) + "</tbody></table>" +
       '<p class="note">Sample run for ' + esc(g.r.label) + ", demo on " + esc(longDate(a.demoDate)) + ". The limits were: land by " + hm(g.t.landBy) + ", depart after " + hm(g.t.backAfter) + ". A flight with a line through it does not fit a limit.</p>" +
       '<p class="note">Result: the fastest pair costs ' + money(fast) + " and the cheapest pair that fits costs " + money(cheap) + ". The non-stop flight home costs the same on the next day (" + money(a.nextDayNonStop) + "), so one more night does not save money. The agent left out a " + money(a.overnightSkipped) + " option that stops overnight in Brisbane. The agent stops here and asks a person to choose." +
@@ -917,7 +1016,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     $("h-plan").textContent = (s.req.prop ? s.req.prop + ", " : "") + r.label;
     $("plan-sub").textContent = "Demo on " + longDate(s.req.date) + ". " + plural(s.req.crew, "person") + " from Sydney, " + shortDate(s.trip.outDay) + " to " + shortDate(s.trip.backDay) + ".";
     $("trip").innerHTML = tripRows(s).map(function (c) { return rowHtml(c, booked); }).join("");
-    renderAgent();
+    renderAgent(s);
     $("deadlines").innerHTML = s.deadlines.map(function (x) {
       return '<div class="row"><div class="k">' + esc(shortDate(x.date)) + '</div><div><div class="d" style="color:var(--ink);margin:0">' + esc(x.task) + (x.late ? '<span class="late">Do now</span>' : "") + "</div></div></div>";
     }).join("");
@@ -968,16 +1067,16 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
   }
 
   // The brief is the hand-off to the booking agent.
-  function brief() {
+  function brief(noLinks) {
     var s = state, r = s.req.region, t = s.trip, c = s.req.crew, code = r.airport ? r.airport.code : r.label;
-    return [
+    var L = [
       "TRIP BRIEF",
       "Demo: " + (s.req.prop ? s.req.prop + ", " : "") + r.label + ", " + longDate(s.req.date),
       "Travellers: " + c + ", from Sydney (SYD)",
       "",
       "1. Flight out: SYD to " + code + " on " + shortDate(t.outDay) + "." + (t.direct ? " Land by " + hm(t.landBy) + " local time. Non-stop preferred." : " No direct flight. Any arrival on this day."),
       "2. Flight back: " + code + " to SYD on " + shortDate(t.backDay) + "." + (t.sameDay ? " Depart after " + hm(t.backAfter) + " local time. If no flight fits, take the first flight on " + shortDate(shiftDate(t.backDay, 1)) + " and add one night." : " First flight of the day."),
-      "3. Car: 1 vehicle at " + (r.airport ? r.airport.name : "the airport") + ", " + shortDate(t.outDay) + " to " + shortDate(t.backDay) + ". The drive to the property is " + s.req.drive + " minutes.",
+      "3. Car: " + plural(t.vehicles, "vehicle") + " at " + (r.airport ? r.airport.name : "the airport") + ", " + shortDate(t.outDay) + " to " + shortDate(t.backDay) + ". The drive to the property is " + s.req.drive + " minutes.",
       "4. Rooms: " + plural(t.rooms, "room") + " in " + r.town + " for " + plural(t.nights, "night") + ", check in " + shortDate(t.outDay) + ".",
       "5. Freight: dock, aircraft and batteries leave Sydney by " + shortDate(t.freightBy) + ".",
       "",
@@ -985,14 +1084,10 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
       "- Give 3 options for each flight, with times, stops and the price for " + plural(c, "adult") + ".",
       "- Mark each option that does not fit a time limit.",
       "- Name the fastest pair and the cheapest pair that fit.",
-      "- Do not pay. Stop before the payment page and post the shortlist for approval.",
-      "",
-      "Search links:",
-      "Out: " + s.links.out,
-      "Back: " + s.links.back,
-      "Car: " + s.links.car,
-      "Rooms: " + s.links.rooms
-    ].join("\n");
+      "- Do not pay. Stop before the payment page and post the shortlist for approval."
+    ];
+    if (!noLinks) L.push("", "Search links:", "Out: " + s.links.out, "Back: " + s.links.back, "Car: " + s.links.car, "Rooms: " + s.links.rooms);
+    return L.join("\n");
   }
 
   function slack() {
@@ -1000,9 +1095,57 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     return [
       "*Trip request: " + r.town + " demo, " + shortDate(s.req.date) + "*",
       plural(s.req.crew, "person") + " from Sydney. Out " + shortDate(t.outDay) + (t.direct ? " (land by " + hm(t.landBy) + ")" : "") + ", back " + shortDate(t.backDay) + (t.sameDay ? " (depart after " + hm(t.backAfter) + ")" : "") + ".",
-      "Needs: flights, 1 car, " + plural(t.rooms, "room") + " x " + plural(t.nights, "night") + ", freight by " + shortDate(t.freightBy) + ".",
+      "Needs: flights, " + plural(t.vehicles, "car") + ", " + plural(t.rooms, "room") + " x " + plural(t.nights, "night") + ", freight by " + shortDate(t.freightBy) + ".",
       "Plan: " + link(),
       "Reply with a tick to approve the booking."
+    ].join("\n");
+  }
+
+  // The day-by-day plan for the crew. The blanks are for the booking numbers.
+  function itinerary() {
+    var s = state, r = s.req.region, t = s.trip, req = s.req;
+    var code = r.airport ? r.airport.code : "the airport", air = r.airport ? r.airport.name : "the airport";
+    var L = ["ITINERARY: " + r.town + " demo, " + longDate(req.date), "Crew: " + plural(req.crew, "person") + " from Sydney", ""];
+    L.push(shortDate(t.outDay));
+    L.push("- Flight: SYD to " + code + "." + (t.direct ? " Land by " + hm(t.landBy) + "." : " Travel day.") + " Flight number: ____");
+    L.push("- Car: pick up " + plural(t.vehicles, "vehicle") + " at " + air + ". Booking: ____");
+    L.push("- Drive " + req.drive + " minutes to " + (req.prop || "the property") + "." + (t.direct ? " Site walk with the host. Dock set-up. Rehearsal flight." : ""));
+    L.push("- Stay: " + r.town + ", " + plural(t.rooms, "room") + ", " + plural(t.nights, "night") + ". Booking: ____");
+    if (!t.direct) { L.push("", shortDate(t.walkDay)); L.push("- Site walk with the host. Dock set-up. Rehearsal flight."); }
+    L.push("", shortDate(req.date) + " (demo day)");
+    L.push("- " + hm(s.start) + " crew at the dock. " + hm(s.G) + " guests arrive. " + hm(s.end) + " pack down ends.");
+    if (t.sameDay) {
+      L.push("- Drive " + req.drive + " minutes to the airport. Return the car.");
+      L.push("- Flight: " + code + " to SYD. Depart after " + hm(t.backAfter) + ". Flight number: ____");
+    } else {
+      L.push("", shortDate(t.backDay));
+      L.push("- Drive " + req.drive + " minutes to the airport. Return the car.");
+      L.push("- Flight: " + code + " to SYD, first flight. Flight number: ____");
+    }
+    L.push("", "Freight: leaves Sydney by " + shortDate(t.freightBy) + ". Consignment: ____");
+    L.push("Host: " + (req.host || "____") + "  Phone: ____");
+    return L.join("\n");
+  }
+
+  // A quote request for a road freight carrier.
+  function freightRequest() {
+    var s = state, r = s.req.region, t = s.trip;
+    return [
+      "Subject: Quote request: Sydney to " + r.town + (r.state ? " " + r.state : "") + ", deliver by " + shortDate(t.freightDue),
+      "",
+      "Hi,",
+      "",
+      "Please quote for road freight.",
+      "",
+      "Pickup: Alexandria NSW, on or before " + shortDate(t.freightBy) + ".",
+      "Delivery: [property address] near " + r.town + (r.state ? " " + r.state : "") + ", by " + shortDate(t.freightDue) + ". The road distance is about " + t.roadKm.toLocaleString("en-AU") + " km.",
+      "Items: 1 dock, 1 aircraft, [number] lithium batteries. Weights and sizes: [from engineering].",
+      "The load has lithium batteries. Please tell us your dangerous goods requirements.",
+      "Contact on site: [host name and phone].",
+      "",
+      "Thanks,",
+      "[your name]",
+      "Brumby"
     ].join("\n");
   }
 
@@ -1155,7 +1298,7 @@ footer{max-width:880px;margin:0 auto;padding:20px;border-top:1px solid var(--lin
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove("on"); }, 2200);
   }
 
-  window.__kit = { state: function () { return state; }, markdown: markdown, link: link, brief: brief, slack: slack, ics: icsFile, agent: agentRun };
+  window.__kit = { state: function () { return state; }, markdown: markdown, link: link, brief: brief, slack: slack, ics: icsFile, agent: agentRun, itinerary: itinerary, freight: freightRequest, prompt: agentPrompt };
   init();
 })();
 </script>
